@@ -1,0 +1,2598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>McAfee OpenClaw Security Audit Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #161b22, #21262d); border: 1px solid #30363d; border-radius: 12px; padding: 30px; margin-bottom: 24px; text-align: center; }
+        .header h1 { color: #58a6ff; font-size: 28px; margin-bottom: 8px; }
+        .header .subtitle { color: #8b949e; font-size: 14px; }
+        .header .report-profile { color: #79c0ff; font-size: 12px; margin-top: 6px; letter-spacing: 0.4px; text-transform: uppercase; }
+        .mcafee-logo { color: #e63946; font-weight: bold; font-size: 16px; margin-bottom: 12px; }
+
+        .risk-card { background: linear-gradient(135deg, #161b22, #21262d); border: 2px solid #dc3545; border-radius: 12px; padding: 30px; margin-bottom: 24px; text-align: center; }
+        .risk-score { font-size: 72px; font-weight: bold; color: #dc3545; }
+        .risk-label { font-size: 24px; color: #dc3545; font-weight: 600; margin: 8px 0; }
+        .risk-recommendation { color: #8b949e; font-size: 16px; margin-top: 12px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; text-align: center; }
+        .stat-value { font-size: 36px; font-weight: bold; }
+        .stat-label { color: #8b949e; font-size: 13px; margin-top: 4px; }
+        .stat-critical { color: #f85149; }
+        .stat-high { color: #fd7e14; }
+        .stat-medium { color: #d29922; }
+        .stat-low { color: #3fb950; }
+
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+        .chart-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; }
+        .chart-card h3 { color: #58a6ff; margin-bottom: 16px; font-size: 16px; }
+
+        .findings-section { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+        .findings-section h3 { color: #58a6ff; margin-bottom: 16px; font-size: 18px; }
+        .triage-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+        .triage-card h3 { color: #58a6ff; margin-bottom: 10px; font-size: 16px; }
+        .triage-card p { color: #8b949e; font-size: 13px; }
+        .triage-card .triage-metrics { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .triage-card .triage-pill { background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 999px; padding: 4px 10px; font-size: 12px; }
+        .findings-controls { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 14px; }
+        .findings-search { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; padding: 8px 10px; font-size: 13px; width: 100%; }
+        .findings-search:focus { outline: none; border-color: #58a6ff; }
+        .findings-filter-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .filter-btn { background: #0d1117; color: #8b949e; border: 1px solid #30363d; border-radius: 14px; font-size: 11px; padding: 4px 10px; cursor: pointer; text-transform: uppercase; }
+        .filter-btn:hover { border-color: #58a6ff; color: #c9d1d9; }
+        .filter-btn.active { border-color: #58a6ff; color: #58a6ff; }
+        .filter-toggle { display: inline-flex; gap: 6px; align-items: center; color: #8b949e; font-size: 12px; }
+        .finding-card.hidden { display: none; }
+
+        .finding-card { background: #0d1117; border: 1px solid #21262d; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+        .finding-card details { }
+        .finding-card summary { padding: 12px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; list-style: none; }
+        .finding-card summary::-webkit-details-marker { display: none; }
+        .finding-card summary::before { content: '\25B6'; font-size: 10px; color: #484f58; transition: transform 0.2s; flex-shrink: 0; }
+        .finding-card details[open] summary::before { transform: rotate(90deg); }
+        .finding-card summary:hover { background: #161b22; }
+        .finding-card .finding-summary-row { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+        .finding-card .finding-title { font-weight: 600; color: #c9d1d9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .finding-card .finding-file { color: #484f58; font-family: monospace; font-size: 11px; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+        .finding-detail { padding: 0 16px 16px 36px; border-top: 1px solid #21262d; }
+        .finding-detail .detail-row { margin-top: 10px; }
+        .finding-detail .detail-label { color: #8b949e; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+        .finding-detail .detail-value { color: #c9d1d9; font-size: 13px; }
+        .finding-detail .detail-value code { background: #161b22; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #79c0ff; }
+        .finding-detail .detail-reason { background: #161b22; border-left: 3px solid #58a6ff; padding: 8px 12px; margin-top: 8px; border-radius: 0 4px 4px 0; }
+        .finding-detail .detail-reason p { color: #8b949e; font-size: 12px; }
+        .finding-detail .cve-tag { display: inline-block; background: rgba(248,81,73,0.15); color: #f85149; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-top: 6px; }
+        .finding-detail .mitre-tag { display: inline-block; background: rgba(88,166,255,0.15); color: #58a6ff; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-top: 6px; margin-left: 4px; }
+        .finding-detail .ref-links { margin-top: 8px; }
+        .finding-detail .ref-links .detail-label { margin-bottom: 4px; }
+        .finding-detail .ref-links a { color: #58a6ff; font-size: 12px; text-decoration: none; display: block; padding: 2px 0; word-break: break-all; }
+        .finding-detail .ref-links a:hover { text-decoration: underline; }
+        .finding-detail .ref-links a::before { content: '\2197\FE0F '; font-size: 10px; }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; flex-shrink: 0; }
+        .badge-critical { background: rgba(248,81,73,0.2); color: #f85149; }
+        .badge-high { background: rgba(253,126,20,0.2); color: #fd7e14; }
+        .badge-medium { background: rgba(210,153,34,0.2); color: #d29922; }
+        .badge-low { background: rgba(63,185,80,0.2); color: #3fb950; }
+        .badge-info { background: rgba(88,166,255,0.2); color: #58a6ff; }
+
+        .type-tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; color: #8b949e; background: #21262d; flex-shrink: 0; }
+
+        .threat-intel { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+        .threat-intel h3 { color: #f85149; margin-bottom: 16px; font-size: 18px; }
+        .threat-intel .intel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .threat-intel .intel-card { background: #0d1117; border: 1px solid #21262d; border-radius: 8px; padding: 16px; }
+        .threat-intel .intel-card h4 { color: #58a6ff; font-size: 14px; margin-bottom: 8px; }
+        .threat-intel .intel-card p { color: #8b949e; font-size: 13px; }
+        .threat-intel .intel-card ul { color: #8b949e; font-size: 12px; margin: 8px 0 0 16px; }
+        .threat-intel .intel-card ul li { margin-bottom: 4px; }
+        .threat-intel .intel-card .impact-list { list-style: none; margin: 8px 0 0 0; padding: 0; }
+        .threat-intel .intel-card .impact-list li { padding: 4px 0; border-bottom: 1px solid #161b22; font-size: 12px; color: #c9d1d9; }
+        .threat-intel .intel-card .impact-list li:last-child { border-bottom: none; }
+        .threat-intel .intel-card .impact-list .il-sev { font-weight: 600; margin-right: 4px; }
+
+        .intel-card details { margin-top: 8px; }
+        .intel-card details summary { cursor: pointer; color: #58a6ff; font-size: 12px; padding: 4px 0; }
+        .intel-card details summary:hover { text-decoration: underline; }
+        .intel-card details .expanded-list { margin-top: 8px; max-height: 300px; overflow-y: auto; }
+        .intel-card details .expanded-list::-webkit-scrollbar { width: 6px; }
+        .intel-card details .expanded-list::-webkit-scrollbar-track { background: #0d1117; }
+        .intel-card details .expanded-list::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+        .cve-section { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+        .cve-section h3 { color: #f85149; margin-bottom: 16px; font-size: 18px; }
+        .cve-card { background: #0d1117; border-left: 4px solid #f85149; border-radius: 0 8px 8px 0; padding: 16px; margin-bottom: 12px; }
+        .cve-card .cve-id { color: #f85149; font-weight: bold; font-size: 16px; }
+        .cve-card .cve-cvss { display: inline-block; background: rgba(248,81,73,0.2); color: #f85149; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px; }
+        .cve-card .cve-desc { color: #c9d1d9; font-size: 13px; margin-top: 8px; }
+        .cve-card .cve-file { color: #8b949e; font-size: 12px; font-family: monospace; margin-top: 6px; }
+
+        .ioc-section { margin-top: 16px; }
+        .ioc-section h4 { color: #58a6ff; font-size: 14px; margin-bottom: 8px; }
+        .ioc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; font-family: monospace; }
+        .ioc-cell { background: #0d1117; padding: 8px; border-radius: 4px; }
+        .ioc-cell strong { color: #f85149; }
+
+        .footer { text-align: center; color: #484f58; font-size: 12px; padding: 20px; border-top: 1px solid #21262d; margin-top: 24px; }
+
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .threat-intel .intel-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="mcafee-logo">McAFEE SECURITY</div>
+            <h1>OpenClaw Pre-Install Security Audit</h1>
+            <div class="subtitle">
+                Generated: February 07, 2026 at 22:56 |
+                Repository: C:\claw\mcafee_openclaw_auditor |
+                Files Scanned: 15 |
+                Skills Analyzed: 0
+            </div>
+            <div class="report-profile">Full Technical Report</div>
+        </div>
+
+        <div class="risk-card">
+            <div class="risk-score">100</div>
+            <div class="risk-label">RISK LEVEL: CRITICAL</div>
+            <div class="risk-recommendation">DO NOT INSTALL - Significant security threats detected</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value stat-critical">48</div>
+                <div class="stat-label">Critical Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-high">0</div>
+                <div class="stat-label">High Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-medium">14</div>
+                <div class="stat-label">Medium Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-low">0</div>
+                <div class="stat-label">Low / Info</div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" style="color:#58a6ff">1</div>
+                <div class="stat-label">Dependency Findings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color:#bc8cff">61</div>
+                <div class="stat-label">Source Code Findings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color:#f778ba">0</div>
+                <div class="stat-label">Skill Findings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color:#ff7b72">0</div>
+                <div class="stat-label">Vulnerability / CVE Findings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color:#79c0ff">62</div>
+                <div class="stat-label">Total Findings</div>
+            </div>
+        </div>
+
+        <div class="triage-card">
+            <h3>Triage Overview</h3>
+            <p>
+                Focus on <strong style="color:#c9d1d9">critical/high</strong> findings in executable code paths first.
+                Documentation/test references are useful context but often lower-confidence for active compromise.
+            </p>
+            <div class="triage-metrics">
+                <span class="triage-pill">Unique files with findings: 6</span>
+                <span class="triage-pill">Unique CVEs referenced: 1</span>
+                <span class="triage-pill">Context/docs/test findings: 5</span>
+                <span class="triage-pill">Top categories: credential_harvesting (14), paste_service (13), crypto_wallet (9), malicious_ip (9)</span>
+            </div>
+        </div>
+
+        
+        <div class="threat-intel">
+            <h3>Threat Intelligence Summary</h3>
+            <p style="color:#8b949e;margin-bottom:16px">
+                Threat model context is shown alongside scan evidence from this repository.
+                Use the related-findings lists in each card to validate whether a specific threat
+                is directly supported by findings in this scan.
+            </p>
+            <p style="color:#8b949e;margin-bottom:12px;font-size:12px">
+                No direct CVE-2026-25253 indicators found in scanned files. 42 campaign-aligned indicator(s) found.
+            </p>
+            <div class="intel-grid">
+                <div class="intel-card">
+                    <h4 style="color:#f85149">CVE-2026-25253: 1-Click RCE (CVSS 8.8)</h4>
+                    <p>The <code style="background:#161b22;padding:2px 4px;border-radius:3px;color:#f85149">gatewayUrl</code>
+                    parameter is accepted from URL query strings without an explicit user confirmation dialog.
+                    An attacker sends a victim a crafted link like
+                    <code style="background:#161b22;padding:2px 4px;border-radius:3px;font-size:11px">?gatewayUrl=attacker.com/ws</code>
+                    which silently redirects the WebSocket connection to an attacker-controlled server,
+                    exfiltrating the authentication token.</p>
+
+                    <div style="margin-top:10px;background:#161b22;border-radius:6px;padding:10px;font-size:12px">
+                        <strong style="color:#f85149">Impact on unpatched users (before v2026.1.29):</strong>
+                        <ul style="margin:6px 0 0 16px;color:#c9d1d9">
+                            <li><strong>Token theft</strong> - Auth token sent to attacker's WebSocket server</li>
+                            <li><strong>Sandbox escape</strong> - Attacker calls <code style="background:#0d1117;padding:1px 4px;border-radius:3px">config.patch</code> to switch execution from sandbox to host</li>
+                            <li><strong>Approval bypass</strong> - Attacker calls <code style="background:#0d1117;padding:1px 4px;border-radius:3px">exec.approvals.set</code> to disable all command confirmations</li>
+                            <li><strong>Full RCE</strong> - Arbitrary commands execute on victim's machine without any prompt</li>
+                            <li><strong>Credential theft</strong> - All API keys, tokens, and secrets in ~/.clawdbot/.env are accessible</li>
+                        </ul>
+                        <p style="color:#f85149;margin-top:8px;font-weight:600">
+                            Users running OpenClaw versions prior to v2026.1.29 are fully exposed to this
+                            attack chain. A single click on a malicious link is sufficient for complete system compromise.
+                        </p>
+                    </div>
+
+                    <details style="margin-top:10px">
+                        <summary>View 0 related findings from this scan</summary>
+                        <div class="expanded-list">
+                            <p style="color:#484f58;font-size:12px;padding:4px 0">No related findings detected.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="intel-card">
+                    <h4 style="color:#fd7e14">ClawHavoc Campaign - Attack Patterns Detected</h4>
+                    <p>Our scan detected <strong style="color:#c9d1d9">42 findings</strong>
+                    matching known ClawHavoc campaign techniques. The campaign uses ClickFix social
+                    engineering popups to trick users into running malicious skills that:</p>
+
+                    <ul style="margin:8px 0 0 16px;color:#c9d1d9;font-size:12px">
+                        <li>Encode payloads in Base64 to evade static analysis</li>
+                        <li>Download dropper files to <code style="background:#161b22;padding:1px 4px;border-radius:3px">$TMPDIR</code> via silent curl</li>
+                        <li>Clear macOS Gatekeeper quarantine flags (<code style="background:#161b22;padding:1px 4px;border-radius:3px">xattr -cr</code>) to bypass security</li>
+                        <li>Exfiltrate crypto wallet keys (Solana, Phantom, MetaMask)</li>
+                        <li>Harvest API keys from <code style="background:#161b22;padding:1px 4px;border-radius:3px">~/.clawdbot/.env</code></li>
+                    </ul>
+
+                    <details>
+                        <summary>View all 42 matching findings from this scan</summary>
+                        <div class="expanded-list">
+                            <ul style="list-style:none;margin:0;padding:0"><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> macOS Gatekeeper bypass (xattr clear)<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:256</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> macOS Gatekeeper bypass (xattr clear)<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:263</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> macOS Gatekeeper disabled system-wide<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:280</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Phantom wallet access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:338</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Solana credential access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:346</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Solana credential access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:346</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Solana credential access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:346</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Solana wallet file access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:346</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Solana wallet file access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:346</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Polymarket credential access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:354</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Polymarket credential access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:354</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Phantom wallet access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:360</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Phantom wallet access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:362</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Phantom wallet access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:362</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Phantom wallet access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:362</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Phantom wallet access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:363</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Phantom wallet access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:365</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Obfuscated eval() call<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:415</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Solana wallet file access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:636</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Solana wallet file access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:636</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Ethereum keystore access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:644</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Ethereum keystore access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:644</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Bitcoin wallet access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:651</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Bitcoin wallet access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:652</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> macOS Gatekeeper bypass (xattr clear)<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\utils\report_generator.py:776</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Polymarket credential access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\utils\report_generator.py:884</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Solana credential access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\utils\report_generator.py:884</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Solana wallet file access<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\utils\report_generator.py:884</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Remote code execution via pipe<br><span style="color:#484f58;font-family:monospace;font-size:11px">tests\test_report_generator.py:38</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: glot.io<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\skill_scanner.py:160</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: paste.ee<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\skill_scanner.py:160</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: pastebin.com<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\skill_scanner.py:160</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: glot.io<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:589</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: pastebin.com<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:589</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: paste.ee<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:598</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: hastebin.com<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:599</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: ghostbin.co<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:600</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: rentry.co<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:601</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: dpaste.org<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:602</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: ix.io<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:603</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: sprunge.us<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:604</span></li><li style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Paste service reference: 0x0.st<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\scanners\source_code_scanner.py:605</span></li></ul>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="intel-card">
+                    <h4 style="color:#fd7e14">Exposed Control Servers - Authentication Bypass</h4>
+                    <p>The OpenClaw gateway has a <strong style="color:#c9d1d9">localhost auto-approve</strong>
+                    mechanism: connections from 127.0.0.1 are automatically authenticated without
+                    device pairing. This creates a critical vulnerability when deployed behind a
+                    reverse proxy:</p>
+
+                    <div style="margin-top:8px;background:#161b22;border-radius:6px;padding:10px;font-size:12px">
+                        <strong style="color:#fd7e14">Attack scenario:</strong>
+                        <ol style="margin:6px 0 0 16px;color:#c9d1d9">
+                            <li>Admin deploys OpenClaw behind nginx/Caddy reverse proxy</li>
+                            <li>Proxy forwards requests - all connections arrive from 127.0.0.1</li>
+                            <li><code style="background:#0d1117;padding:1px 4px;border-radius:3px">trustedProxies</code> defaults to empty, so X-Forwarded-For is ignored</li>
+                            <li>Gateway auto-approves ALL connections as "localhost" / trusted</li>
+                            <li>Any internet user gets full authenticated access without credentials</li>
+                        </ol>
+                        <p style="color:#fd7e14;margin-top:8px">
+                            Hundreds of such exposed instances have been documented on Shodan,
+                            giving unauthenticated attackers full command execution and credential access.
+                        </p>
+                    </div>
+
+                    <details>
+                        <summary>View 0 related findings from this scan</summary>
+                        <div class="expanded-list">
+                            <p style="color:#484f58;font-size:12px;padding:4px 0">No related findings detected.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="intel-card">
+                    <h4 style="color:#d29922">ClawHub Marketplace Trust Manipulation</h4>
+                    <p>~20% of skills on the ClawHub marketplace have been identified as malicious.
+                    Threat actors manipulate download counts and ratings to make trojanized skills
+                    appear popular and trustworthy. Users install these skills without reviewing
+                    the underlying source code.</p>
+
+                    <div style="margin-top:8px;background:#161b22;border-radius:6px;padding:10px;font-size:12px">
+                        <strong style="color:#d29922">Known malicious patterns on ClawHub:</strong>
+                        <ul style="margin:6px 0 0 16px;color:#c9d1d9">
+                            <li>Skills with random alphanumeric suffixes (e.g., <code style="background:#0d1117;padding:1px 4px;border-radius:3px">polymarket-7ceau</code>, <code style="background:#0d1117;padding:1px 4px;border-radius:3px">phantom-0jcvy</code>)</li>
+                            <li>Mass-published by single authors (~199 skills from one account)</li>
+                            <li>Impersonate popular crypto tools (Phantom, Solana, Jupiter)</li>
+                            <li>Fake download counts to game marketplace ranking</li>
+                        </ul>
+                        <p style="margin-top:8px;color:#8b949e">
+                            Browse <a href="https://clawhub.ai/explore" target="_blank" style="color:#58a6ff">ClawHub Explore</a>
+                            and search for skills with short random suffixes to see examples of this pattern.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="intel-card">
+                    <h4>Architecture Risk Assessment</h4>
+                    <p>
+                        Auth bypass issues found: <strong style="color:#f85149">0</strong><br>
+                        Sandbox escape vectors: <strong style="color:#f85149">0</strong><br>
+                        Credential exposure: <strong style="color:#fd7e14">0</strong><br>
+                        Supply chain risks: <strong style="color:#d29922">0</strong>
+                    </p>
+                    <p style="color:#f85149;margin-top:8px;font-weight:600">
+                        The OpenClaw agent runs with the user's full system privileges by design.
+                        Any compromise of the auth token, gateway, or skill system gives the
+                        attacker complete control over the host machine.
+                    </p>
+                </div>
+
+                <div class="intel-card">
+                    <h4>Social Engineering Vectors</h4>
+                    <p>Documented attack vectors used against OpenClaw users:</p>
+                    <ul style="margin:8px 0 0 16px;color:#c9d1d9;font-size:12px">
+                        <li><strong>ClickFix popups</strong> - Fake error dialogs trick users into running malicious commands</li>
+                        <li><strong>Crafted gateway URLs</strong> - Shared via chat/email to steal tokens (CVE-2026-25253)</li>
+                        <li><strong>Trojanized skills</strong> - Look-alike skills on ClawHub with hidden payloads</li>
+                        <li><strong>AMOS Stealer delivery</strong> - macOS Gatekeeper bypass via xattr clearing</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="ioc-section">
+                <h4>Indicators of Compromise (IOCs)</h4>
+                <div class="ioc-grid">
+                    <div class="ioc-cell">
+                        <strong>Malicious IPs:</strong><br>
+                        91.92.242.30 (C2 server)<br>
+                        54.91.154.110:13338 (reverse shell)
+                    </div>
+                    <div class="ioc-cell">
+                        <strong>Malicious Domains:</strong><br>
+                        socifiapp[.]com/api/reports/upload<br>
+                        webhook[.]site/358866c4-...
+                    </div>
+                    <div class="ioc-cell">
+                        <strong>Credential Targets:</strong><br>
+                        ~/.clawdbot/.env (API keys)<br>
+                        SOLANA_KEYPAIR_PATH, POLYMARKET_API_KEY
+                    </div>
+                    <div class="ioc-cell">
+                        <strong>Detection Rules:</strong><br>
+                        PHASR.Base64.Decode, PHASR.Curl.Silent<br>
+                        EDR.GatekeeperQuarantineBypass
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="cve-section">
+            <h3>CVE Details (1 unique CVEs detected)</h3>
+            
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2024-35195</span>
+                    <div class="cve-desc">Cookie leak on redirect in requests. Affected: &lt;2.32.0. Spec: requests&gt;=2.31.0         # For HTTP requests (if needed)</div>
+                    <div class="cve-file">archive\requirements-minimal.txt</div>
+                </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Findings by Severity</h3>
+                <canvas id="severityChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Findings by Category</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+
+        <div class="findings-section">
+            <h3>
+                All Findings
+                (<span id="visibleFindingCount">62</span> / 62)
+            </h3>
+            <div class="findings-controls">
+                <input id="findingSearch" class="findings-search" type="text" placeholder="Search title, file, category..." />
+                <div class="findings-filter-row">
+                    <button class="filter-btn active" data-severity="all" type="button">All</button>
+                    <button class="filter-btn" data-severity="critical" type="button">Critical</button>
+                    <button class="filter-btn" data-severity="high" type="button">High</button>
+                    <button class="filter-btn" data-severity="medium" type="button">Medium</button>
+                    <button class="filter-btn" data-severity="low" type="button">Low</button>
+                    <button class="filter-btn" data-severity="info" type="button">Info</button>
+                    <label class="filter-toggle">
+                        <input id="hideContextFindings" type="checkbox" />
+                        Hide docs/tests
+                    </label>
+                </div>
+            </div>
+            
+            <div class="finding-card" data-severity="critical" data-context="1" data-search="known malicious ip: 91.92.242.30 readme.md malicious_ip source_code c2 server used in clawhavoc campaign to host dropper payloads">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#1 Known malicious IP: 91.92.242.30</span>
+                            <span class="finding-file">README.md:101</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">C2 server used in ClawHavoc campaign to host dropper payloads</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>README.md:101</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_ip</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="1" data-search="known malicious ip: 54.91.154.110 readme.md malicious_ip source_code reverse shell callback endpoint (authtool campaign, port 13338)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#2 Known malicious IP: 54.91.154.110</span>
+                            <span class="finding-file">README.md:102</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reverse shell callback endpoint (AuthTool campaign, port 13338)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>README.md:102</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_ip</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="1" data-search="known malicious domain: socifiapp.com readme.md malicious_domain source_code exfiltration endpoint used in clawhavoc campaign for stolen credentials">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#3 Known malicious domain: socifiapp.com</span>
+                            <span class="finding-file">README.md:103</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Exfiltration endpoint used in ClawHavoc campaign for stolen credentials</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>README.md:103</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_domain</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Domain identified in published IOC list from enterprise security advisory (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="1" data-search="known malicious domain: webhook.site/358866c4 readme.md malicious_domain source_code specific malicious webhook instance used for credential theft">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#4 Known malicious domain: webhook.site/358866c4</span>
+                            <span class="finding-file">README.md:104</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Specific malicious webhook instance used for credential theft</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>README.md:104</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_domain</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Domain identified in published IOC list from enterprise security advisory (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="1" data-search="access to .clawdbot/.env credentials file readme.md credential_theft source_code direct access to ~/.clawdbot/.env which stores api keys (openai, anthropic, aws) in plaintext. this is the primary credential exfiltration target in observed attack campaigns.">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#5 Access to .clawdbot/.env credentials file</span>
+                            <span class="finding-file">README.md:105</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>README.md:105</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_theft</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="known malicious ip: 91.92.242.30 src\scanners\source_code_scanner.py malicious_ip source_code c2 server used in clawhavoc campaign to host dropper payloads">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#6 Known malicious IP: 91.92.242.30</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:51</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">C2 server used in ClawHavoc campaign to host dropper payloads</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:51</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_ip</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="known malicious ip: 91.92.242.31 src\scanners\source_code_scanner.py malicious_ip source_code adjacent c2 infrastructure in same network block as .30">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#7 Known malicious IP: 91.92.242.31</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:53</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Adjacent C2 infrastructure in same network block as .30</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:53</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_ip</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="known malicious ip: 54.91.154.110 src\scanners\source_code_scanner.py malicious_ip source_code reverse shell callback endpoint (authtool campaign, port 13338)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#8 Known malicious IP: 54.91.154.110</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:57</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reverse shell callback endpoint (AuthTool campaign, port 13338)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:57</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_ip</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="known malicious ip: 185.215.113. src\scanners\source_code_scanner.py malicious_ip source_code ip range frequently observed in commodity malware c2">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#9 Known malicious IP: 185.215.113.</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:60</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">IP range frequently observed in commodity malware C2</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:60</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_ip</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="known malicious ip: 45.155.205. src\scanners\source_code_scanner.py malicious_ip source_code ip range frequently observed in commodity malware c2">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#10 Known malicious IP: 45.155.205.</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:62</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">IP range frequently observed in commodity malware C2</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:62</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_ip</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="known malicious domain: socifiapp.com src\scanners\source_code_scanner.py malicious_domain source_code exfiltration endpoint used in clawhavoc campaign for stolen credentials">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#11 Known malicious domain: socifiapp.com</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:70</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Exfiltration endpoint used in ClawHavoc campaign for stolen credentials</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:70</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_domain</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Domain identified in published IOC list from enterprise security advisory (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="known malicious domain: webhook.site/358866c4 src\scanners\source_code_scanner.py malicious_domain source_code specific malicious webhook instance used for credential theft">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#12 Known malicious domain: webhook.site/358866c4</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:73</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Specific malicious webhook instance used for credential theft</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:73</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_domain</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Domain identified in published IOC list from enterprise security advisory (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="macos gatekeeper bypass (xattr clear) src\scanners\source_code_scanner.py gatekeeper_bypass source_code xattr attribute clearing bypasses macos gatekeeper quarantine. this is the delivery pattern used by amos stealer in malicious clawhub skills. detection rule: phasr.xattr.attributescleared.">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#13 macOS Gatekeeper bypass (xattr clear)</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:256</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:256</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">gatekeeper_bypass</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1553/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1553/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="macos gatekeeper bypass (xattr clear) src\scanners\source_code_scanner.py gatekeeper_bypass source_code xattr attribute clearing bypasses macos gatekeeper quarantine. this is the delivery pattern used by amos stealer in malicious clawhub skills. detection rule: phasr.xattr.attributescleared.">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#14 macOS Gatekeeper bypass (xattr clear)</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:263</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:263</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">gatekeeper_bypass</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1553/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1553/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="macos gatekeeper disabled system-wide src\scanners\source_code_scanner.py gatekeeper_bypass source_code spctl --master-disable turns off gatekeeper entirely, allowing any unsigned binary to run">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#15 macOS Gatekeeper disabled system-wide</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:280</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">spctl --master-disable turns off Gatekeeper entirely, allowing any unsigned binary to run</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:280</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">gatekeeper_bypass</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1553/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1553/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="access to .clawdbot/.env credentials file src\scanners\source_code_scanner.py credential_theft source_code direct access to ~/.clawdbot/.env which stores api keys (openai, anthropic, aws) in plaintext. this is the primary credential exfiltration target in observed attack campaigns.">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#16 Access to .clawdbot/.env credentials file</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:301</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:301</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_theft</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="access to .clawdbot/.env credentials file src\scanners\source_code_scanner.py credential_theft source_code direct access to ~/.clawdbot/.env which stores api keys (openai, anthropic, aws) in plaintext. this is the primary credential exfiltration target in observed attack campaigns.">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#17 Access to .clawdbot/.env credentials file</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:311</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:311</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_theft</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="access to .clawdbot/.env credentials file src\scanners\source_code_scanner.py credential_theft source_code direct access to ~/.clawdbot/.env which stores api keys (openai, anthropic, aws) in plaintext. this is the primary credential exfiltration target in observed attack campaigns.">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#18 Access to .clawdbot/.env credentials file</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:312</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:312</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_theft</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="phantom wallet access src\scanners\source_code_scanner.py credential_harvesting source_code access to phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#19 Phantom wallet access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:338</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:338</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="solana credential access src\scanners\source_code_scanner.py credential_harvesting source_code access to solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#20 Solana credential access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:346</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:346</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="solana credential access src\scanners\source_code_scanner.py credential_harvesting source_code access to solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#21 Solana credential access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:346</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:346</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="solana credential access src\scanners\source_code_scanner.py credential_harvesting source_code access to solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#22 Solana credential access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:346</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:346</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="solana wallet file access src\scanners\source_code_scanner.py crypto_wallet source_code direct access to solana wallet files - matches known malicious skill targeting pattern">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#23 Solana wallet file access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:346</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to Solana wallet files - matches known malicious skill targeting pattern</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:346</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">crypto_wallet</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="solana wallet file access src\scanners\source_code_scanner.py crypto_wallet source_code direct access to solana wallet files - matches known malicious skill targeting pattern">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#24 Solana wallet file access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:346</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to Solana wallet files - matches known malicious skill targeting pattern</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:346</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">crypto_wallet</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="polymarket credential access src\scanners\source_code_scanner.py credential_harvesting source_code access to polymarket api credentials - targeted by known malicious skills (e.g. polymarket-7ceau)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#25 Polymarket credential access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:354</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Polymarket API credentials - targeted by known malicious skills (e.g. polymarket-7ceau)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:354</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="polymarket credential access src\scanners\source_code_scanner.py credential_harvesting source_code access to polymarket api credentials - targeted by known malicious skills (e.g. polymarket-7ceau)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#26 Polymarket credential access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:354</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Polymarket API credentials - targeted by known malicious skills (e.g. polymarket-7ceau)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:354</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="phantom wallet access src\scanners\source_code_scanner.py credential_harvesting source_code access to phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#27 Phantom wallet access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:360</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:360</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="phantom wallet access src\scanners\source_code_scanner.py credential_harvesting source_code access to phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#28 Phantom wallet access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:362</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:362</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="phantom wallet access src\scanners\source_code_scanner.py credential_harvesting source_code access to phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#29 Phantom wallet access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:362</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:362</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="phantom wallet access src\scanners\source_code_scanner.py credential_harvesting source_code access to phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#30 Phantom wallet access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:362</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:362</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="phantom wallet access src\scanners\source_code_scanner.py credential_harvesting source_code access to phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#31 Phantom wallet access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:363</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:363</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="phantom wallet access src\scanners\source_code_scanner.py credential_harvesting source_code access to phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#32 Phantom wallet access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:365</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:365</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="obfuscated eval() call src\scanners\source_code_scanner.py obfuscation source_code eval() with encoding/decoding function - classic malware deobfuscation pattern">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#33 Obfuscated eval() call</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:415</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">eval() with encoding/decoding function - classic malware deobfuscation pattern</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:415</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">obfuscation</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1027/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1027/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="solana wallet file access src\scanners\source_code_scanner.py crypto_wallet source_code direct access to solana wallet files - matches known malicious skill targeting pattern">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#34 Solana wallet file access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:636</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to Solana wallet files - matches known malicious skill targeting pattern</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:636</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">crypto_wallet</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="solana wallet file access src\scanners\source_code_scanner.py crypto_wallet source_code direct access to solana wallet files - matches known malicious skill targeting pattern">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#35 Solana wallet file access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:636</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to Solana wallet files - matches known malicious skill targeting pattern</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:636</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">crypto_wallet</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="ethereum keystore access src\scanners\source_code_scanner.py crypto_wallet source_code direct access to ethereum keystore files">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#36 Ethereum keystore access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:644</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to Ethereum keystore files</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:644</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">crypto_wallet</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="ethereum keystore access src\scanners\source_code_scanner.py crypto_wallet source_code direct access to ethereum keystore files">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#37 Ethereum keystore access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:644</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to Ethereum keystore files</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:644</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">crypto_wallet</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="bitcoin wallet access src\scanners\source_code_scanner.py crypto_wallet source_code direct access to bitcoin wallet files">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#38 Bitcoin wallet access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:651</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to Bitcoin wallet files</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:651</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">crypto_wallet</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="bitcoin wallet access src\scanners\source_code_scanner.py crypto_wallet source_code direct access to bitcoin wallet files">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#39 Bitcoin wallet access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:652</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to Bitcoin wallet files</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:652</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">crypto_wallet</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="cloud metadata endpoint access src\scanners\source_code_scanner.py ssrf source_code reference to cloud instance metadata endpoint - ssrf can steal iam credentials and secrets">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#40 Cloud metadata endpoint access</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:683</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to cloud instance metadata endpoint - SSRF can steal IAM credentials and secrets</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:683</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">ssrf</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>OpenClaw patched SSRF guards for skill downloads; metadata access enables cloud account takeover</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://cwe.mitre.org/data/definitions/918.html" target="_blank" rel="noopener">https://cwe.mitre.org/data/definitions/918.html</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="access to .clawdbot/.env credentials file src\utils\report_generator.py credential_theft source_code direct access to ~/.clawdbot/.env which stores api keys (openai, anthropic, aws) in plaintext. this is the primary credential exfiltration target in observed attack campaigns.">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#41 Access to .clawdbot/.env credentials file</span>
+                            <span class="finding-file">src\utils\report_generator.py:751</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\utils\report_generator.py:751</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_theft</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="macos gatekeeper bypass (xattr clear) src\utils\report_generator.py gatekeeper_bypass source_code xattr attribute clearing bypasses macos gatekeeper quarantine. this is the delivery pattern used by amos stealer in malicious clawhub skills. detection rule: phasr.xattr.attributescleared.">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#42 macOS Gatekeeper bypass (xattr clear)</span>
+                            <span class="finding-file">src\utils\report_generator.py:776</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\utils\report_generator.py:776</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">gatekeeper_bypass</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1553/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1553/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="known malicious ip: 91.92.242.30 src\utils\report_generator.py malicious_ip source_code c2 server used in clawhavoc campaign to host dropper payloads">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#43 Known malicious IP: 91.92.242.30</span>
+                            <span class="finding-file">src\utils\report_generator.py:873</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">C2 server used in ClawHavoc campaign to host dropper payloads</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\utils\report_generator.py:873</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_ip</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="known malicious ip: 54.91.154.110 src\utils\report_generator.py malicious_ip source_code reverse shell callback endpoint (authtool campaign, port 13338)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#44 Known malicious IP: 54.91.154.110</span>
+                            <span class="finding-file">src\utils\report_generator.py:874</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reverse shell callback endpoint (AuthTool campaign, port 13338)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\utils\report_generator.py:874</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">malicious_ip</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1071/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1071/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="polymarket credential access src\utils\report_generator.py credential_harvesting source_code access to polymarket api credentials - targeted by known malicious skills (e.g. polymarket-7ceau)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#45 Polymarket credential access</span>
+                            <span class="finding-file">src\utils\report_generator.py:884</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Polymarket API credentials - targeted by known malicious skills (e.g. polymarket-7ceau)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\utils\report_generator.py:884</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="solana credential access src\utils\report_generator.py credential_harvesting source_code access to solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#46 Solana credential access</span>
+                            <span class="finding-file">src\utils\report_generator.py:884</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\utils\report_generator.py:884</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="solana wallet file access src\utils\report_generator.py crypto_wallet source_code direct access to solana wallet files - matches known malicious skill targeting pattern">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#47 Solana wallet file access</span>
+                            <span class="finding-file">src\utils\report_generator.py:884</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to Solana wallet files - matches known malicious skill targeting pattern</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\utils\report_generator.py:884</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">crypto_wallet</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="critical" data-context="0" data-search="remote code execution via pipe tests\test_report_generator.py dangerous_command source_code download and execute pattern (curl|bash) - mitre att&amp;ck t1059.004">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#48 Remote code execution via pipe</span>
+                            <span class="finding-file">tests\test_report_generator.py:38</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Download and execute pattern (curl|bash) - MITRE ATT&amp;CK T1059.004</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>tests\test_report_generator.py:38</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_command</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1059/004/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1059/004/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="known vulnerability in requests archive\requirements-minimal.txt  dependency cookie leak on redirect in requests. affected: &lt;2.32.0. spec: requests&gt;=2.31.0         # for http requests (if needed)">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#49 Known vulnerability in requests</span>
+                            <span class="finding-file">archive\requirements-minimal.txt</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Cookie leak on redirect in requests. Affected: &lt;2.32.0. Spec: requests&gt;=2.31.0         # For HTTP requests (if needed)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>archive\requirements-minimal.txt</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-35195</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-35195" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-35195</a><a href="https://github.com/advisories/GHSA-9wx4-h78v-vm56" target="_blank" rel="noopener">https://github.com/advisories/GHSA-9wx4-h78v-vm56</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: glot.io src\scanners\skill_scanner.py paste_service source_code reference to paste service glot.io - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#50 Paste service reference: glot.io</span>
+                            <span class="finding-file">src\scanners\skill_scanner.py:160</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service glot.io - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\skill_scanner.py:160</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: paste.ee src\scanners\skill_scanner.py paste_service source_code reference to paste service paste.ee - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#51 Paste service reference: paste.ee</span>
+                            <span class="finding-file">src\scanners\skill_scanner.py:160</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service paste.ee - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\skill_scanner.py:160</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: pastebin.com src\scanners\skill_scanner.py paste_service source_code reference to paste service pastebin.com - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#52 Paste service reference: pastebin.com</span>
+                            <span class="finding-file">src\scanners\skill_scanner.py:160</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service pastebin.com - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\skill_scanner.py:160</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: glot.io src\scanners\source_code_scanner.py paste_service source_code reference to paste service glot.io - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#53 Paste service reference: glot.io</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:589</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service glot.io - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:589</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: pastebin.com src\scanners\source_code_scanner.py paste_service source_code reference to paste service pastebin.com - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#54 Paste service reference: pastebin.com</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:589</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service pastebin.com - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:589</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: paste.ee src\scanners\source_code_scanner.py paste_service source_code reference to paste service paste.ee - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#55 Paste service reference: paste.ee</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:598</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service paste.ee - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:598</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: hastebin.com src\scanners\source_code_scanner.py paste_service source_code reference to paste service hastebin.com - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#56 Paste service reference: hastebin.com</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:599</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service hastebin.com - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:599</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: ghostbin.co src\scanners\source_code_scanner.py paste_service source_code reference to paste service ghostbin.co - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#57 Paste service reference: ghostbin.co</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:600</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service ghostbin.co - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:600</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: rentry.co src\scanners\source_code_scanner.py paste_service source_code reference to paste service rentry.co - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#58 Paste service reference: rentry.co</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:601</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service rentry.co - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:601</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: dpaste.org src\scanners\source_code_scanner.py paste_service source_code reference to paste service dpaste.org - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#59 Paste service reference: dpaste.org</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:602</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service dpaste.org - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:602</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: ix.io src\scanners\source_code_scanner.py paste_service source_code reference to paste service ix.io - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#60 Paste service reference: ix.io</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:603</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service ix.io - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:603</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: sprunge.us src\scanners\source_code_scanner.py paste_service source_code reference to paste service sprunge.us - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#61 Paste service reference: sprunge.us</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:604</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service sprunge.us - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:604</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card" data-severity="medium" data-context="0" data-search="paste service reference: 0x0.st src\scanners\source_code_scanner.py paste_service source_code reference to paste service 0x0.st - commonly used for hosting malicious payloads in skill attacks">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#62 Paste service reference: 0x0.st</span>
+                            <span class="finding-file">src\scanners\source_code_scanner.py:605</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Reference to paste service 0x0.st - commonly used for hosting malicious payloads in skill attacks</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\scanners\source_code_scanner.py:605</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">paste_service</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <div class="footer">
+            McAfee OpenClaw Pre-Install Security Auditor v1.0.0 |
+            Proof of Concept - For demonstration purposes |
+            &copy; 2026 McAfee Security
+        </div>
+    </div>
+
+    <script>
+        const severityCtx = document.getElementById('severityChart').getContext('2d');
+        new Chart(severityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ["medium", "critical"],
+                datasets: [{
+                    data: [14, 48],
+                    backgroundColor: ["#d29922", "#f85149"],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#c9d1d9', font: { size: 12 } }
+                    }
+                }
+            }
+        });
+
+        const catCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(catCtx, {
+            type: 'bar',
+            data: {
+                labels: ["dependency", "malicious_ip", "malicious_domain", "credential_theft", "paste_service", "credential_harvesting", "obfuscation", "gatekeeper_bypass", "crypto_wallet", "ssrf", "dangerous_command"],
+                datasets: [{
+                    label: 'Findings',
+                    data: [1, 9, 4, 5, 13, 14, 1, 4, 9, 1, 1],
+                    backgroundColor: '#58a6ff',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#8b949e' },
+                        grid: { color: '#21262d' }
+                    },
+                    y: {
+                        ticks: { color: '#c9d1d9', font: { size: 11 } },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        const searchInput = document.getElementById('findingSearch');
+        const hideContext = document.getElementById('hideContextFindings');
+        const findingCards = Array.from(document.querySelectorAll('.finding-card'));
+        const severityButtons = Array.from(document.querySelectorAll('.filter-btn'));
+        const visibleCount = document.getElementById('visibleFindingCount');
+        let activeSeverity = 'all';
+
+        function applyFindingFilters() {
+            const query = (searchInput?.value || '').toLowerCase().trim();
+            const hideContextEnabled = !!hideContext?.checked;
+            let visible = 0;
+            findingCards.forEach((card) => {
+                const sev = card.dataset.severity || '';
+                const text = card.dataset.search || '';
+                const isContext = card.dataset.context === '1';
+                const severityMatches = activeSeverity === 'all' || sev === activeSeverity;
+                const queryMatches = !query || text.includes(query);
+                const contextMatches = !hideContextEnabled || !isContext;
+                const show = severityMatches && queryMatches && contextMatches;
+                card.classList.toggle('hidden', !show);
+                if (show) visible += 1;
+            });
+            if (visibleCount) {
+                visibleCount.textContent = String(visible);
+            }
+        }
+
+        severityButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                activeSeverity = btn.dataset.severity || 'all';
+                severityButtons.forEach((b) => b.classList.remove('active'));
+                btn.classList.add('active');
+                applyFindingFilters();
+            });
+        });
+        searchInput?.addEventListener('input', applyFindingFilters);
+        hideContext?.addEventListener('change', applyFindingFilters);
+    </script>
+</body>
+</html>

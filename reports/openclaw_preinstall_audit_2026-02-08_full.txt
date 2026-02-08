@@ -1,0 +1,524 @@
+======================================================================
+  McAfee OpenClaw Pre-Install Security Audit Report
+======================================================================
+
+  Report Profile:  FULL
+  Generated:       2026-02-07 22:56:38
+  Repository:      C:\claw\mcafee_openclaw_auditor
+  Files Scanned:   15
+  Skills Analyzed: 0
+  Duration:        0.39s
+
+----------------------------------------------------------------------
+  RISK SCORE:      100 / 100
+  RISK LEVEL:      CRITICAL
+  RECOMMENDATION:  DO NOT INSTALL - Significant security threats detected
+----------------------------------------------------------------------
+
+  Total Findings:  62
+  Critical:        48
+  High:            0
+  Medium:          14
+  Low:             0
+  Info:            0
+  Context Findings:5
+
+----------------------------------------------------------------------
+  TOP CATEGORIES
+----------------------------------------------------------------------
+  - credential_harvesting: 14
+  - paste_service: 13
+  - crypto_wallet: 9
+  - malicious_ip: 9
+  - credential_theft: 5
+  - gatekeeper_bypass: 4
+  - malicious_domain: 4
+  - dangerous_command: 1
+
+----------------------------------------------------------------------
+  MOST AFFECTED FILES (CRITICAL/HIGH)
+----------------------------------------------------------------------
+  - src\scanners\source_code_scanner.py: 35
+  - src\utils\report_generator.py: 7
+  - README.md: 5
+  - tests\test_report_generator.py: 1
+
+======================================================================
+  DETAILED FINDINGS
+======================================================================
+
+  [CRITICAL] #1: Known malicious IP: 91.92.242.30
+    File: README.md
+    Line: 101
+    C2 server used in ClawHavoc campaign to host dropper payloads
+    Reason: IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #2: Known malicious IP: 54.91.154.110
+    File: README.md
+    Line: 102
+    Reverse shell callback endpoint (AuthTool campaign, port 13338)
+    Reason: IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #3: Known malicious domain: socifiapp.com
+    File: README.md
+    Line: 103
+    Exfiltration endpoint used in ClawHavoc campaign for stolen credentials
+    Reason: Domain identified in published IOC list from enterprise security advisory (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #4: Known malicious domain: webhook.site/358866c4
+    File: README.md
+    Line: 104
+    Specific malicious webhook instance used for credential theft
+    Reason: Domain identified in published IOC list from enterprise security advisory (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #5: Access to .clawdbot/.env credentials file
+    File: README.md
+    Line: 105
+    Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.
+    Reason: ~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #6: Known malicious IP: 91.92.242.30
+    File: src\scanners\source_code_scanner.py
+    Line: 51
+    C2 server used in ClawHavoc campaign to host dropper payloads
+    Reason: IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #7: Known malicious IP: 91.92.242.31
+    File: src\scanners\source_code_scanner.py
+    Line: 53
+    Adjacent C2 infrastructure in same network block as .30
+    Reason: IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #8: Known malicious IP: 54.91.154.110
+    File: src\scanners\source_code_scanner.py
+    Line: 57
+    Reverse shell callback endpoint (AuthTool campaign, port 13338)
+    Reason: IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #9: Known malicious IP: 185.215.113.
+    File: src\scanners\source_code_scanner.py
+    Line: 60
+    IP range frequently observed in commodity malware C2
+    Reason: IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #10: Known malicious IP: 45.155.205.
+    File: src\scanners\source_code_scanner.py
+    Line: 62
+    IP range frequently observed in commodity malware C2
+    Reason: IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #11: Known malicious domain: socifiapp.com
+    File: src\scanners\source_code_scanner.py
+    Line: 70
+    Exfiltration endpoint used in ClawHavoc campaign for stolen credentials
+    Reason: Domain identified in published IOC list from enterprise security advisory (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #12: Known malicious domain: webhook.site/358866c4
+    File: src\scanners\source_code_scanner.py
+    Line: 73
+    Specific malicious webhook instance used for credential theft
+    Reason: Domain identified in published IOC list from enterprise security advisory (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #13: macOS Gatekeeper bypass (xattr clear)
+    File: src\scanners\source_code_scanner.py
+    Line: 256
+    xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.
+    Reason: Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks
+    References:
+      - https://attack.mitre.org/techniques/T1553/001/
+
+  [CRITICAL] #14: macOS Gatekeeper bypass (xattr clear)
+    File: src\scanners\source_code_scanner.py
+    Line: 263
+    xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.
+    Reason: Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks
+    References:
+      - https://attack.mitre.org/techniques/T1553/001/
+
+  [CRITICAL] #15: macOS Gatekeeper disabled system-wide
+    File: src\scanners\source_code_scanner.py
+    Line: 280
+    spctl --master-disable turns off Gatekeeper entirely, allowing any unsigned binary to run
+    Reason: Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks
+    References:
+      - https://attack.mitre.org/techniques/T1553/001/
+
+  [CRITICAL] #16: Access to .clawdbot/.env credentials file
+    File: src\scanners\source_code_scanner.py
+    Line: 301
+    Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.
+    Reason: ~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #17: Access to .clawdbot/.env credentials file
+    File: src\scanners\source_code_scanner.py
+    Line: 311
+    Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.
+    Reason: ~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #18: Access to .clawdbot/.env credentials file
+    File: src\scanners\source_code_scanner.py
+    Line: 312
+    Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.
+    Reason: ~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #19: Phantom wallet access
+    File: src\scanners\source_code_scanner.py
+    Line: 338
+    Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #20: Solana credential access
+    File: src\scanners\source_code_scanner.py
+    Line: 346
+    Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #21: Solana credential access
+    File: src\scanners\source_code_scanner.py
+    Line: 346
+    Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #22: Solana credential access
+    File: src\scanners\source_code_scanner.py
+    Line: 346
+    Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #23: Solana wallet file access
+    File: src\scanners\source_code_scanner.py
+    Line: 346
+    Direct access to Solana wallet files - matches known malicious skill targeting pattern
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #24: Solana wallet file access
+    File: src\scanners\source_code_scanner.py
+    Line: 346
+    Direct access to Solana wallet files - matches known malicious skill targeting pattern
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #25: Polymarket credential access
+    File: src\scanners\source_code_scanner.py
+    Line: 354
+    Access to Polymarket API credentials - targeted by known malicious skills (e.g. polymarket-7ceau)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #26: Polymarket credential access
+    File: src\scanners\source_code_scanner.py
+    Line: 354
+    Access to Polymarket API credentials - targeted by known malicious skills (e.g. polymarket-7ceau)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #27: Phantom wallet access
+    File: src\scanners\source_code_scanner.py
+    Line: 360
+    Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #28: Phantom wallet access
+    File: src\scanners\source_code_scanner.py
+    Line: 362
+    Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #29: Phantom wallet access
+    File: src\scanners\source_code_scanner.py
+    Line: 362
+    Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #30: Phantom wallet access
+    File: src\scanners\source_code_scanner.py
+    Line: 362
+    Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #31: Phantom wallet access
+    File: src\scanners\source_code_scanner.py
+    Line: 363
+    Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #32: Phantom wallet access
+    File: src\scanners\source_code_scanner.py
+    Line: 365
+    Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #33: Obfuscated eval() call
+    File: src\scanners\source_code_scanner.py
+    Line: 415
+    eval() with encoding/decoding function - classic malware deobfuscation pattern
+    References:
+      - https://attack.mitre.org/techniques/T1027/
+
+  [CRITICAL] #34: Solana wallet file access
+    File: src\scanners\source_code_scanner.py
+    Line: 636
+    Direct access to Solana wallet files - matches known malicious skill targeting pattern
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #35: Solana wallet file access
+    File: src\scanners\source_code_scanner.py
+    Line: 636
+    Direct access to Solana wallet files - matches known malicious skill targeting pattern
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #36: Ethereum keystore access
+    File: src\scanners\source_code_scanner.py
+    Line: 644
+    Direct access to Ethereum keystore files
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #37: Ethereum keystore access
+    File: src\scanners\source_code_scanner.py
+    Line: 644
+    Direct access to Ethereum keystore files
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #38: Bitcoin wallet access
+    File: src\scanners\source_code_scanner.py
+    Line: 651
+    Direct access to Bitcoin wallet files
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #39: Bitcoin wallet access
+    File: src\scanners\source_code_scanner.py
+    Line: 652
+    Direct access to Bitcoin wallet files
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #40: Cloud metadata endpoint access
+    File: src\scanners\source_code_scanner.py
+    Line: 683
+    Reference to cloud instance metadata endpoint - SSRF can steal IAM credentials and secrets
+    Reason: OpenClaw patched SSRF guards for skill downloads; metadata access enables cloud account takeover
+    References:
+      - https://cwe.mitre.org/data/definitions/918.html
+
+  [CRITICAL] #41: Access to .clawdbot/.env credentials file
+    File: src\utils\report_generator.py
+    Line: 751
+    Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.
+    Reason: ~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #42: macOS Gatekeeper bypass (xattr clear)
+    File: src\utils\report_generator.py
+    Line: 776
+    xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.
+    Reason: Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks
+    References:
+      - https://attack.mitre.org/techniques/T1553/001/
+
+  [CRITICAL] #43: Known malicious IP: 91.92.242.30
+    File: src\utils\report_generator.py
+    Line: 873
+    C2 server used in ClawHavoc campaign to host dropper payloads
+    Reason: IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #44: Known malicious IP: 54.91.154.110
+    File: src\utils\report_generator.py
+    Line: 874
+    Reverse shell callback endpoint (AuthTool campaign, port 13338)
+    Reason: IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)
+    References:
+      - https://attack.mitre.org/techniques/T1071/001/
+
+  [CRITICAL] #45: Polymarket credential access
+    File: src\utils\report_generator.py
+    Line: 884
+    Access to Polymarket API credentials - targeted by known malicious skills (e.g. polymarket-7ceau)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #46: Solana credential access
+    File: src\utils\report_generator.py
+    Line: 884
+    Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #47: Solana wallet file access
+    File: src\utils\report_generator.py
+    Line: 884
+    Direct access to Solana wallet files - matches known malicious skill targeting pattern
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #48: Remote code execution via pipe
+    File: tests\test_report_generator.py
+    Line: 38
+    Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004
+    References:
+      - https://attack.mitre.org/techniques/T1059/004/
+
+  [MEDIUM] #49: Known vulnerability in requests
+    File: archive\requirements-minimal.txt
+    Cookie leak on redirect in requests. Affected: <2.32.0. Spec: requests>=2.31.0         # For HTTP requests (if needed)
+    CVE: CVE-2024-35195
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-35195
+      - https://github.com/advisories/GHSA-9wx4-h78v-vm56
+
+  [MEDIUM] #50: Paste service reference: glot.io
+    File: src\scanners\skill_scanner.py
+    Line: 160
+    Reference to paste service glot.io - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #51: Paste service reference: paste.ee
+    File: src\scanners\skill_scanner.py
+    Line: 160
+    Reference to paste service paste.ee - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #52: Paste service reference: pastebin.com
+    File: src\scanners\skill_scanner.py
+    Line: 160
+    Reference to paste service pastebin.com - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #53: Paste service reference: glot.io
+    File: src\scanners\source_code_scanner.py
+    Line: 589
+    Reference to paste service glot.io - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #54: Paste service reference: pastebin.com
+    File: src\scanners\source_code_scanner.py
+    Line: 589
+    Reference to paste service pastebin.com - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #55: Paste service reference: paste.ee
+    File: src\scanners\source_code_scanner.py
+    Line: 598
+    Reference to paste service paste.ee - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #56: Paste service reference: hastebin.com
+    File: src\scanners\source_code_scanner.py
+    Line: 599
+    Reference to paste service hastebin.com - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #57: Paste service reference: ghostbin.co
+    File: src\scanners\source_code_scanner.py
+    Line: 600
+    Reference to paste service ghostbin.co - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #58: Paste service reference: rentry.co
+    File: src\scanners\source_code_scanner.py
+    Line: 601
+    Reference to paste service rentry.co - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #59: Paste service reference: dpaste.org
+    File: src\scanners\source_code_scanner.py
+    Line: 602
+    Reference to paste service dpaste.org - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #60: Paste service reference: ix.io
+    File: src\scanners\source_code_scanner.py
+    Line: 603
+    Reference to paste service ix.io - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #61: Paste service reference: sprunge.us
+    File: src\scanners\source_code_scanner.py
+    Line: 604
+    Reference to paste service sprunge.us - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [MEDIUM] #62: Paste service reference: 0x0.st
+    File: src\scanners\source_code_scanner.py
+    Line: 605
+    Reference to paste service 0x0.st - commonly used for hosting malicious payloads in skill attacks
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+======================================================================
+  McAfee OpenClaw Pre-Install Security Auditor v1.0.0
+======================================================================

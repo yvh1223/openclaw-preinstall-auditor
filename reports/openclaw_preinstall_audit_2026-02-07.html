@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>McAfee OpenClaw Security Audit Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #161b22, #21262d); border: 1px solid #30363d; border-radius: 12px; padding: 30px; margin-bottom: 24px; text-align: center; }
+        .header h1 { color: #58a6ff; font-size: 28px; margin-bottom: 8px; }
+        .header .subtitle { color: #8b949e; font-size: 14px; }
+        .mcafee-logo { color: #e63946; font-weight: bold; font-size: 16px; margin-bottom: 12px; }
+
+        .risk-card { background: linear-gradient(135deg, #161b22, #21262d); border: 2px solid #dc3545; border-radius: 12px; padding: 30px; margin-bottom: 24px; text-align: center; }
+        .risk-score { font-size: 72px; font-weight: bold; color: #dc3545; }
+        .risk-label { font-size: 24px; color: #dc3545; font-weight: 600; margin: 8px 0; }
+        .risk-recommendation { color: #8b949e; font-size: 16px; margin-top: 12px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; text-align: center; }
+        .stat-value { font-size: 36px; font-weight: bold; }
+        .stat-label { color: #8b949e; font-size: 13px; margin-top: 4px; }
+        .stat-critical { color: #f85149; }
+        .stat-high { color: #fd7e14; }
+        .stat-medium { color: #d29922; }
+        .stat-low { color: #3fb950; }
+
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+        .chart-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; }
+        .chart-card h3 { color: #58a6ff; margin-bottom: 16px; font-size: 16px; }
+
+        .findings-section { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+        .findings-section h3 { color: #58a6ff; margin-bottom: 16px; font-size: 18px; }
+
+        .finding-card { background: #0d1117; border: 1px solid #21262d; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+        .finding-card details { }
+        .finding-card summary { padding: 12px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; list-style: none; }
+        .finding-card summary::-webkit-details-marker { display: none; }
+        .finding-card summary::before { content: '\25B6'; font-size: 10px; color: #484f58; transition: transform 0.2s; flex-shrink: 0; }
+        .finding-card details[open] summary::before { transform: rotate(90deg); }
+        .finding-card summary:hover { background: #161b22; }
+        .finding-card .finding-summary-row { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+        .finding-card .finding-title { font-weight: 600; color: #c9d1d9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .finding-card .finding-file { color: #484f58; font-family: monospace; font-size: 11px; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+        .finding-detail { padding: 0 16px 16px 36px; border-top: 1px solid #21262d; }
+        .finding-detail .detail-row { margin-top: 10px; }
+        .finding-detail .detail-label { color: #8b949e; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+        .finding-detail .detail-value { color: #c9d1d9; font-size: 13px; }
+        .finding-detail .detail-value code { background: #161b22; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #79c0ff; }
+        .finding-detail .detail-reason { background: #161b22; border-left: 3px solid #58a6ff; padding: 8px 12px; margin-top: 8px; border-radius: 0 4px 4px 0; }
+        .finding-detail .detail-reason p { color: #8b949e; font-size: 12px; }
+        .finding-detail .cve-tag { display: inline-block; background: rgba(248,81,73,0.15); color: #f85149; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-top: 6px; }
+        .finding-detail .mitre-tag { display: inline-block; background: rgba(88,166,255,0.15); color: #58a6ff; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-top: 6px; margin-left: 4px; }
+        .finding-detail .ref-links { margin-top: 8px; }
+        .finding-detail .ref-links .detail-label { margin-bottom: 4px; }
+        .finding-detail .ref-links a { color: #58a6ff; font-size: 12px; text-decoration: none; display: block; padding: 2px 0; word-break: break-all; }
+        .finding-detail .ref-links a:hover { text-decoration: underline; }
+        .finding-detail .ref-links a::before { content: '\2197\FE0F '; font-size: 10px; }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; flex-shrink: 0; }
+        .badge-critical { background: rgba(248,81,73,0.2); color: #f85149; }
+        .badge-high { background: rgba(253,126,20,0.2); color: #fd7e14; }
+        .badge-medium { background: rgba(210,153,34,0.2); color: #d29922; }
+        .badge-low { background: rgba(63,185,80,0.2); color: #3fb950; }
+        .badge-info { background: rgba(88,166,255,0.2); color: #58a6ff; }
+
+        .type-tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; color: #8b949e; background: #21262d; flex-shrink: 0; }
+
+        .threat-intel { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+        .threat-intel h3 { color: #f85149; margin-bottom: 16px; font-size: 18px; }
+        .threat-intel .intel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .threat-intel .intel-card { background: #0d1117; border: 1px solid #21262d; border-radius: 8px; padding: 16px; }
+        .threat-intel .intel-card h4 { color: #58a6ff; font-size: 14px; margin-bottom: 8px; }
+        .threat-intel .intel-card p { color: #8b949e; font-size: 13px; }
+        .threat-intel .intel-card ul { color: #8b949e; font-size: 12px; margin: 8px 0 0 16px; }
+        .threat-intel .intel-card ul li { margin-bottom: 4px; }
+        .threat-intel .intel-card .impact-list { list-style: none; margin: 8px 0 0 0; padding: 0; }
+        .threat-intel .intel-card .impact-list li { padding: 4px 0; border-bottom: 1px solid #161b22; font-size: 12px; color: #c9d1d9; }
+        .threat-intel .intel-card .impact-list li:last-child { border-bottom: none; }
+        .threat-intel .intel-card .impact-list .il-sev { font-weight: 600; margin-right: 4px; }
+
+        .intel-card details { margin-top: 8px; }
+        .intel-card details summary { cursor: pointer; color: #58a6ff; font-size: 12px; padding: 4px 0; }
+        .intel-card details summary:hover { text-decoration: underline; }
+        .intel-card details .expanded-list { margin-top: 8px; max-height: 300px; overflow-y: auto; }
+        .intel-card details .expanded-list::-webkit-scrollbar { width: 6px; }
+        .intel-card details .expanded-list::-webkit-scrollbar-track { background: #0d1117; }
+        .intel-card details .expanded-list::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+        .cve-section { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+        .cve-section h3 { color: #f85149; margin-bottom: 16px; font-size: 18px; }
+        .cve-card { background: #0d1117; border-left: 4px solid #f85149; border-radius: 0 8px 8px 0; padding: 16px; margin-bottom: 12px; }
+        .cve-card .cve-id { color: #f85149; font-weight: bold; font-size: 16px; }
+        .cve-card .cve-cvss { display: inline-block; background: rgba(248,81,73,0.2); color: #f85149; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px; }
+        .cve-card .cve-desc { color: #c9d1d9; font-size: 13px; margin-top: 8px; }
+        .cve-card .cve-file { color: #8b949e; font-size: 12px; font-family: monospace; margin-top: 6px; }
+
+        .ioc-section { margin-top: 16px; }
+        .ioc-section h4 { color: #58a6ff; font-size: 14px; margin-bottom: 8px; }
+        .ioc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; font-family: monospace; }
+        .ioc-cell { background: #0d1117; padding: 8px; border-radius: 4px; }
+        .ioc-cell strong { color: #f85149; }
+
+        .footer { text-align: center; color: #484f58; font-size: 12px; padding: 20px; border-top: 1px solid #21262d; margin-top: 24px; }
+
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .threat-intel .intel-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="mcafee-logo">McAFEE SECURITY</div>
+            <h1>OpenClaw Pre-Install Security Audit</h1>
+            <div class="subtitle">
+                Generated: February 07, 2026 at 22:37 |
+                Repository: C:\claw\openclaw_repo |
+                Files Scanned: 4664 |
+                Skills Analyzed: 61
+            </div>
+        </div>
+
+        <div class="risk-card">
+            <div class="risk-score">100</div>
+            <div class="risk-label">RISK LEVEL: CRITICAL</div>
+            <div class="risk-recommendation">DO NOT INSTALL - Significant security threats detected</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value stat-critical">5</div>
+                <div class="stat-label">Critical Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-high">23</div>
+                <div class="stat-label">High Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-medium">27</div>
+                <div class="stat-label">Medium Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-low">1</div>
+                <div class="stat-label">Low / Info</div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" style="color:#58a6ff">18</div>
+                <div class="stat-label">Dependency Findings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color:#bc8cff">14</div>
+                <div class="stat-label">Source Code Findings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color:#f778ba">2</div>
+                <div class="stat-label">Skill Findings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color:#ff7b72">22</div>
+                <div class="stat-label">Vulnerability / CVE Findings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color:#79c0ff">56</div>
+                <div class="stat-label">Total Findings</div>
+            </div>
+        </div>
+
+        
+        <div class="threat-intel">
+            <h3>Threat Intelligence Summary</h3>
+            <p style="color:#8b949e;margin-bottom:16px">
+                Initial findings from scanning the OpenClaw repository (formerly Clawdbot/Moltbot).
+                This report identifies architectural weaknesses, known CVEs, and code patterns
+                matching documented attack techniques against OpenClaw deployments.
+            </p>
+            <div class="intel-grid">
+                <div class="intel-card">
+                    <h4 style="color:#f85149">CVE-2026-25253: 1-Click RCE (CVSS 8.8)</h4>
+                    <p>The <code style="background:#161b22;padding:2px 4px;border-radius:3px;color:#f85149">gatewayUrl</code>
+                    parameter is accepted from URL query strings without an explicit user confirmation dialog.
+                    An attacker sends a victim a crafted link like
+                    <code style="background:#161b22;padding:2px 4px;border-radius:3px;font-size:11px">?gatewayUrl=attacker.com/ws</code>
+                    which silently redirects the WebSocket connection to an attacker-controlled server,
+                    exfiltrating the authentication token.</p>
+
+                    <div style="margin-top:10px;background:#161b22;border-radius:6px;padding:10px;font-size:12px">
+                        <strong style="color:#f85149">Impact on unpatched users (before v2026.1.29):</strong>
+                        <ul style="margin:6px 0 0 16px;color:#c9d1d9">
+                            <li><strong>Token theft</strong> - Auth token sent to attacker's WebSocket server</li>
+                            <li><strong>Sandbox escape</strong> - Attacker calls <code style="background:#0d1117;padding:1px 4px;border-radius:3px">config.patch</code> to switch execution from sandbox to host</li>
+                            <li><strong>Approval bypass</strong> - Attacker calls <code style="background:#0d1117;padding:1px 4px;border-radius:3px">exec.approvals.set</code> to disable all command confirmations</li>
+                            <li><strong>Full RCE</strong> - Arbitrary commands execute on victim's machine without any prompt</li>
+                            <li><strong>Credential theft</strong> - All API keys, tokens, and secrets in ~/.clawdbot/.env are accessible</li>
+                        </ul>
+                        <p style="color:#f85149;margin-top:8px;font-weight:600">
+                            Users running OpenClaw versions prior to v2026.1.29 are fully exposed to this
+                            attack chain. A single click on a malicious link is sufficient for complete system compromise.
+                        </p>
+                    </div>
+
+                    <details style="margin-top:10px">
+                        <summary>View 4 related findings from this scan</summary>
+                        <div class="expanded-list">
+                            <ul style="list-style:none;margin:0;padding:0"><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> CVE-2026-25253: gatewayUrl token exfiltration<br><span style="color:#484f58;font-family:monospace;font-size:11px">ui/src/ui/app-settings.ts</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> CVE-2026-25253: gatewayUrl persisted in localStorage<br><span style="color:#484f58;font-family:monospace;font-size:11px">ui/src/ui/storage.ts</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Exec approval bypass: ask=&#x27;off&#x27; in elevated mode<br><span style="color:#484f58;font-family:monospace;font-size:11px">src/agents/bash-tools.exec.ts:948</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#fd7e14;font-weight:600">[HIGH]</span> operator.admin scope grants full control<br><span style="color:#484f58;font-family:monospace;font-size:11px">src/gateway/server-methods.ts</span></li></ul>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="intel-card">
+                    <h4 style="color:#fd7e14">ClawHavoc Campaign - Attack Patterns Detected</h4>
+                    <p>Our scan detected <strong style="color:#c9d1d9">10 findings</strong>
+                    matching known ClawHavoc campaign techniques. The campaign uses ClickFix social
+                    engineering popups to trick users into running malicious skills that:</p>
+
+                    <ul style="margin:8px 0 0 16px;color:#c9d1d9;font-size:12px">
+                        <li>Encode payloads in Base64 to evade static analysis</li>
+                        <li>Download dropper files to <code style="background:#161b22;padding:1px 4px;border-radius:3px">$TMPDIR</code> via silent curl</li>
+                        <li>Clear macOS Gatekeeper quarantine flags (<code style="background:#161b22;padding:1px 4px;border-radius:3px">xattr -cr</code>) to bypass security</li>
+                        <li>Exfiltrate crypto wallet keys (Solana, Phantom, MetaMask)</li>
+                        <li>Harvest API keys from <code style="background:#161b22;padding:1px 4px;border-radius:3px">~/.clawdbot/.env</code></li>
+                    </ul>
+
+                    <details>
+                        <summary>View all 10 matching findings from this scan</summary>
+                        <div class="expanded-list">
+                            <ul style="list-style:none;margin:0;padding:0"><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#fd7e14;font-weight:600">[HIGH]</span> eval() with string argument<br><span style="color:#484f58;font-family:monospace;font-size:11px">apps\android\app\src\main\java\ai\openclaw\android\protocol\OpenClawProtocolConstants.kt:16</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#fd7e14;font-weight:600">[HIGH]</span> Hardcoded password<br><span style="color:#484f58;font-family:monospace;font-size:11px">apps\shared\OpenClawKit\Sources\OpenClawKit\GatewayChannel.swift:100</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Solana wallet file access<br><span style="color:#484f58;font-family:monospace;font-size:11px">extensions\google-gemini-cli-auth\oauth.ts:163</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> macOS Gatekeeper bypass (xattr clear)<br><span style="color:#484f58;font-family:monospace;font-size:11px">scripts\codesign-mac-app.sh:192</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#fd7e14;font-weight:600">[HIGH]</span> eval() with string argument<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\browser\pw-tools-core.interactions.ts:243</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#fd7e14;font-weight:600">[HIGH]</span> eval() with string argument<br><span style="color:#484f58;font-family:monospace;font-size:11px">src\browser\pw-tools-core.interactions.ts:260</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#fd7e14;font-weight:600">[HIGH]</span> CVE-2026-21636: Permission Model bypass documented<br><span style="color:#484f58;font-family:monospace;font-size:11px">SECURITY.md</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Exec approval bypass: ask=&#x27;off&#x27; in elevated mode<br><span style="color:#484f58;font-family:monospace;font-size:11px">src/agents/bash-tools.exec.ts:948</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#fd7e14;font-weight:600">[HIGH]</span> Host execution mode configurable at runtime<br><span style="color:#484f58;font-family:monospace;font-size:11px">src/agents/bash-tools.exec.ts</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#fd7e14;font-weight:600">[HIGH]</span> exec.approvals.set API endpoint exists<br><span style="color:#484f58;font-family:monospace;font-size:11px">src/gateway/server-methods/exec-approvals.ts</span></li></ul>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="intel-card">
+                    <h4 style="color:#fd7e14">Exposed Control Servers - Authentication Bypass</h4>
+                    <p>The OpenClaw gateway has a <strong style="color:#c9d1d9">localhost auto-approve</strong>
+                    mechanism: connections from 127.0.0.1 are automatically authenticated without
+                    device pairing. This creates a critical vulnerability when deployed behind a
+                    reverse proxy:</p>
+
+                    <div style="margin-top:8px;background:#161b22;border-radius:6px;padding:10px;font-size:12px">
+                        <strong style="color:#fd7e14">Attack scenario:</strong>
+                        <ol style="margin:6px 0 0 16px;color:#c9d1d9">
+                            <li>Admin deploys OpenClaw behind nginx/Caddy reverse proxy</li>
+                            <li>Proxy forwards requests - all connections arrive from 127.0.0.1</li>
+                            <li><code style="background:#0d1117;padding:1px 4px;border-radius:3px">trustedProxies</code> defaults to empty, so X-Forwarded-For is ignored</li>
+                            <li>Gateway auto-approves ALL connections as "localhost" / trusted</li>
+                            <li>Any internet user gets full authenticated access without credentials</li>
+                        </ol>
+                        <p style="color:#fd7e14;margin-top:8px">
+                            Hundreds of such exposed instances have been documented on Shodan,
+                            giving unauthenticated attackers full command execution and credential access.
+                        </p>
+                    </div>
+
+                    <details>
+                        <summary>View 4 related findings from this scan</summary>
+                        <div class="expanded-list">
+                            <ul style="list-style:none;margin:0;padding:0"><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#f85149;font-weight:600">[CRITICAL]</span> Localhost auto-approve bypasses authentication<br><span style="color:#484f58;font-family:monospace;font-size:11px">src/gateway/server/ws-connection/message-handler.ts:691</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#d29922;font-weight:600">[MEDIUM]</span> Auto-approved device pairing logging detected<br><span style="color:#484f58;font-family:monospace;font-size:11px">src/gateway/server/ws-connection/message-handler.ts</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#fd7e14;font-weight:600">[HIGH]</span> dangerouslyDisableDeviceAuth flag exists<br><span style="color:#484f58;font-family:monospace;font-size:11px">src/config/types.gateway.ts:76</span></li><li class="impact-list" style="padding:6px 0;border-bottom:1px solid #161b22;font-size:12px"><span style="color:#fd7e14;font-weight:600">[HIGH]</span> allowInsecureAuth flag exists<br><span style="color:#484f58;font-family:monospace;font-size:11px">src/config/types.gateway.ts:74</span></li></ul>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="intel-card">
+                    <h4 style="color:#d29922">ClawHub Marketplace Trust Manipulation</h4>
+                    <p>~20% of skills on the ClawHub marketplace have been identified as malicious.
+                    Threat actors manipulate download counts and ratings to make trojanized skills
+                    appear popular and trustworthy. Users install these skills without reviewing
+                    the underlying source code.</p>
+
+                    <div style="margin-top:8px;background:#161b22;border-radius:6px;padding:10px;font-size:12px">
+                        <strong style="color:#d29922">Known malicious patterns on ClawHub:</strong>
+                        <ul style="margin:6px 0 0 16px;color:#c9d1d9">
+                            <li>Skills with random alphanumeric suffixes (e.g., <code style="background:#0d1117;padding:1px 4px;border-radius:3px">polymarket-7ceau</code>, <code style="background:#0d1117;padding:1px 4px;border-radius:3px">phantom-0jcvy</code>)</li>
+                            <li>Mass-published by single authors (~199 skills from one account)</li>
+                            <li>Impersonate popular crypto tools (Phantom, Solana, Jupiter)</li>
+                            <li>Fake download counts to game marketplace ranking</li>
+                        </ul>
+                        <p style="margin-top:8px;color:#8b949e">
+                            Browse <a href="https://clawhub.ai/explore" target="_blank" style="color:#58a6ff">ClawHub Explore</a>
+                            and search for skills with short random suffixes to see examples of this pattern.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="intel-card">
+                    <h4>Architecture Risk Assessment</h4>
+                    <p>
+                        Auth bypass issues found: <strong style="color:#f85149">6</strong><br>
+                        Sandbox escape vectors: <strong style="color:#f85149">4</strong><br>
+                        Credential exposure: <strong style="color:#fd7e14">5</strong><br>
+                        Supply chain risks: <strong style="color:#d29922">0</strong>
+                    </p>
+                    <p style="color:#f85149;margin-top:8px;font-weight:600">
+                        The OpenClaw agent runs with the user's full system privileges by design.
+                        Any compromise of the auth token, gateway, or skill system gives the
+                        attacker complete control over the host machine.
+                    </p>
+                </div>
+
+                <div class="intel-card">
+                    <h4>Social Engineering Vectors</h4>
+                    <p>Documented attack vectors used against OpenClaw users:</p>
+                    <ul style="margin:8px 0 0 16px;color:#c9d1d9;font-size:12px">
+                        <li><strong>ClickFix popups</strong> - Fake error dialogs trick users into running malicious commands</li>
+                        <li><strong>Crafted gateway URLs</strong> - Shared via chat/email to steal tokens (CVE-2026-25253)</li>
+                        <li><strong>Trojanized skills</strong> - Look-alike skills on ClawHub with hidden payloads</li>
+                        <li><strong>AMOS Stealer delivery</strong> - macOS Gatekeeper bypass via xattr clearing</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="ioc-section">
+                <h4>Indicators of Compromise (IOCs)</h4>
+                <div class="ioc-grid">
+                    <div class="ioc-cell">
+                        <strong>Malicious IPs:</strong><br>
+                        91.92.242.30 (C2 server)<br>
+                        54.91.154.110:13338 (reverse shell)
+                    </div>
+                    <div class="ioc-cell">
+                        <strong>Malicious Domains:</strong><br>
+                        socifiapp[.]com/api/reports/upload<br>
+                        webhook[.]site/358866c4-...
+                    </div>
+                    <div class="ioc-cell">
+                        <strong>Credential Targets:</strong><br>
+                        ~/.clawdbot/.env (API keys)<br>
+                        SOLANA_KEYPAIR_PATH, POLYMARKET_API_KEY
+                    </div>
+                    <div class="ioc-cell">
+                        <strong>Detection Rules:</strong><br>
+                        PHASR.Base64.Decode, PHASR.Curl.Silent<br>
+                        EDR.GatekeeperQuarantineBypass
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="cve-section">
+            <h3>CVE Details (13 unique CVEs detected)</h3>
+            
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2024-29041</span>
+                    <div class="cve-desc">Open redirect vulnerability in Express &lt; 4.21.0. Affected: &lt;4.21.0. Installed: ^5.2.1</div>
+                    <div class="cve-file">package.json</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2022-46175</span>
+                    <div class="cve-desc">Prototype pollution in JSON5. Affected: &lt;2.2.2. Installed: ^2.2.3</div>
+                    <div class="cve-file">package.json</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2024-21536</span>
+                    <div class="cve-desc">ReDoS vulnerability in markdown-it. Affected: &lt;13.0.2. Installed: ^14.1.0</div>
+                    <div class="cve-file">package.json</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2024-29415</span>
+                    <div class="cve-desc">SSRF in ip package used by sharp. Affected: &lt;0.33.0. Installed: ^0.34.5</div>
+                    <div class="cve-file">package.json</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2024-30260</span>
+                    <div class="cve-desc">HTTP request smuggling in undici. Affected: &lt;6.19.2. Installed: ^7.21.0</div>
+                    <div class="cve-file">package.json</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2024-37890</span>
+                    <div class="cve-desc">DoS vulnerability in ws via large frame headers. Affected: &lt;8.17.1. Installed: ^8.19.0</div>
+                    <div class="cve-file">package.json</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2024-47818</span>
+                    <div class="cve-desc">Prototype pollution in fast-xml-parser &lt; 4.4.1. Overridden to 5.3.4. CVE: CVE-2024-47818</div>
+                    <div class="cve-file">package.json (pnpm.overrides)</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2022-24999</span>
+                    <div class="cve-desc">Prototype pollution in qs. Overridden to 6.14.1. CVE: CVE-2022-24999</div>
+                    <div class="cve-file">package.json (pnpm.overrides)</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2023-26136</span>
+                    <div class="cve-desc">Prototype pollution in tough-cookie &lt; 4.1.3. Overridden to 4.1.3. CVE: CVE-2023-26136</div>
+                    <div class="cve-file">package.json (pnpm.overrides)</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2024-28863</span>
+                    <div class="cve-desc">Denial of service via crafted tar files in tar &lt; 6.2.1. Overridden to 7.5.7. CVE: CVE-2024-28863</div>
+                    <div class="cve-file">package.json (pnpm.overrides)</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2024-24762</span>
+                    <div class="cve-desc">DoS via multipart form parsing in FastAPI. Affected: &lt;0.109.1. Spec: fastapi&gt;=0.110.0</div>
+                    <div class="cve-file">skills\local-places\pyproject.toml</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2026-25253</span><span class="cve-cvss">CVSS 8.8</span>
+                    <div class="cve-desc">CVE-2026-25253 (CVSS 8.8): gatewayUrl accepted from URL parameters without explicit user confirmation modal. An attacker can craft a link like ?gatewayUrl=attacker.com/ws to exfiltrate auth tokens over WebSocket, then chain to full RCE by disabling sandbox and exec approvals. Reason: The UI auto-connects to the supplied gateway URL transmitting credentials without user consent.</div>
+                    <div class="cve-file">ui/src/ui/app-settings.ts</div>
+                </div>
+                <div class="cve-card">
+                    <span class="cve-id">CVE-2026-21636</span>
+                    <div class="cve-desc">SECURITY.md documents CVE-2026-21636 (Node.js Permission Model bypass). Users running Node.js &lt; 22.12.0 have no effective sandbox. Pre-install check must verify the user&#x27;s Node.js version.</div>
+                    <div class="cve-file">SECURITY.md</div>
+                </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Findings by Severity</h3>
+                <canvas id="severityChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Findings by Category</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+
+        <div class="findings-section">
+            <h3>All Findings (56)</h3>
+            
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#1 Solana wallet file access</span>
+                            <span class="finding-file">extensions\google-gemini-cli-auth\oauth.ts:163</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Direct access to Solana wallet files - matches known malicious skill targeting pattern</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>extensions\google-gemini-cli-auth\oauth.ts:163</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">crypto_wallet</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#2 macOS Gatekeeper bypass (xattr clear)</span>
+                            <span class="finding-file">scripts\codesign-mac-app.sh:192</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>scripts\codesign-mac-app.sh:192</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">gatekeeper_bypass</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1553/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1553/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#3 CVE-2026-25253: gatewayUrl token exfiltration</span>
+                            <span class="finding-file">ui/src/ui/app-settings.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">CVE-2026-25253 (CVSS 8.8): gatewayUrl accepted from URL parameters without explicit user confirmation modal. An attacker can craft a link like ?gatewayUrl=attacker.com/ws to exfiltrate auth tokens over WebSocket, then chain to full RCE by disabling sandbox and exec approvals. Reason: The UI auto-connects to the supplied gateway URL transmitting credentials without user consent.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>ui/src/ui/app-settings.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">cve</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>NVD-listed CVE discovered by depthfirst (Mav Levin), fixed in v2026.1.29</p>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2026-25253</span><span class="cve-tag">CVSS 8.8</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2026-25253" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2026-25253</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#4 Localhost auto-approve bypasses authentication</span>
+                            <span class="finding-file">src/gateway/server/ws-connection/message-handler.ts:691</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Device pairing is auto-approved (silent: isLocalClient) for connections from localhost. When deployed behind a reverse proxy (nginx, Caddy), ALL connections arrive from 127.0.0.1, causing every connection to be auto-approved without authentication. Reason: Independent researcher found hundreds of exposed instances on Shodan with this misconfiguration, giving full credential access and command execution to unauthenticated users.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/gateway/server/ws-connection/message-handler.ts:691</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">auth_bypass</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/www-project-web-security-testing-guide/" target="_blank" rel="noopener">https://owasp.org/www-project-web-security-testing-guide/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-critical">critical</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#5 Exec approval bypass: ask=&#x27;off&#x27; in elevated mode</span>
+                            <span class="finding-file">src/agents/bash-tools.exec.ts:948</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">In elevated/full mode, execution approvals can be set to &#x27;off&#x27;, bypassing all user confirmation for shell commands. Reason: This is step 2 of the CVE-2026-25253 exploit chain - after stealing an auth token, attacker calls exec.approvals.set to disable all confirmation prompts before executing arbitrary commands.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/agents/bash-tools.exec.ts:948</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">approval_bypass</div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2026-25253</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2026-25253" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2026-25253</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#6 Known vulnerability in json5</span>
+                            <span class="finding-file">package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Prototype pollution in JSON5. Affected: &lt;2.2.2. Installed: ^2.2.3</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2022-46175</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2022-46175" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2022-46175</a><a href="https://github.com/advisories/GHSA-9c47-m6qq-7p4h" target="_blank" rel="noopener">https://github.com/advisories/GHSA-9c47-m6qq-7p4h</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#7 Known vulnerability in ws</span>
+                            <span class="finding-file">package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">DoS vulnerability in ws via large frame headers. Affected: &lt;8.17.1. Installed: ^8.19.0</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-37890</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-37890" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-37890</a><a href="https://github.com/advisories/GHSA-3h5v-q93c-6h6q" target="_blank" rel="noopener">https://github.com/advisories/GHSA-3h5v-q93c-6h6q</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#8 Known vulnerability in ws</span>
+                            <span class="finding-file">extensions\voice-call\package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">DoS vulnerability in ws via large frame headers. Affected: &lt;8.17.1. Installed: ^8.19.0</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>extensions\voice-call\package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-37890</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-37890" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-37890</a><a href="https://github.com/advisories/GHSA-3h5v-q93c-6h6q" target="_blank" rel="noopener">https://github.com/advisories/GHSA-3h5v-q93c-6h6q</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#9 Override for known CVE: fast-xml-parser</span>
+                            <span class="finding-file">package.json (pnpm.overrides)</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Prototype pollution in fast-xml-parser &lt; 4.4.1. Overridden to 5.3.4. CVE: CVE-2024-47818</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>package.json (pnpm.overrides)</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-47818</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-47818" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-47818</a><a href="https://github.com/advisories/GHSA-mpg4-rc92-vx8v" target="_blank" rel="noopener">https://github.com/advisories/GHSA-mpg4-rc92-vx8v</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#10 Override for known CVE: qs</span>
+                            <span class="finding-file">package.json (pnpm.overrides)</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Prototype pollution in qs. Overridden to 6.14.1. CVE: CVE-2022-24999</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>package.json (pnpm.overrides)</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2022-24999</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2022-24999" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2022-24999</a><a href="https://github.com/advisories/GHSA-hrpp-h998-j3pp" target="_blank" rel="noopener">https://github.com/advisories/GHSA-hrpp-h998-j3pp</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#11 Override for known CVE: tar</span>
+                            <span class="finding-file">package.json (pnpm.overrides)</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Denial of service via crafted tar files in tar &lt; 6.2.1. Overridden to 7.5.7. CVE: CVE-2024-28863</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>package.json (pnpm.overrides)</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-28863</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-28863" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-28863</a><a href="https://github.com/advisories/GHSA-f5x3-32g6-xq36" target="_blank" rel="noopener">https://github.com/advisories/GHSA-f5x3-32g6-xq36</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#12 Known vulnerability in fastapi</span>
+                            <span class="finding-file">skills\local-places\pyproject.toml</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">DoS via multipart form parsing in FastAPI. Affected: &lt;0.109.1. Spec: fastapi&gt;=0.110.0</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>skills\local-places\pyproject.toml</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-24762</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-24762" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-24762</a><a href="https://github.com/advisories/GHSA-2jv5-9r88-3w3p" target="_blank" rel="noopener">https://github.com/advisories/GHSA-2jv5-9r88-3w3p</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#13 eval() with string argument</span>
+                            <span class="finding-file">apps\android\app\src\main\java\ai\openclaw\android\protocol\OpenClawProtocolConstants.kt:16</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Dynamic code execution via eval() with string literal</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>apps\android\app\src\main\java\ai\openclaw\android\protocol\OpenClawProtocolConstants.kt:16</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">obfuscation</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1027/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1027/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#14 Hardcoded password</span>
+                            <span class="finding-file">apps\shared\OpenClawKit\Sources\OpenClawKit\GatewayChannel.swift:100</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Hardcoded password detected (OWASP A07:2021 - Security Misconfiguration)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>apps\shared\OpenClawKit\Sources\OpenClawKit\GatewayChannel.swift:100</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_harvesting</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a><a href="https://attack.mitre.org/techniques/T1552/001/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1552/001/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#15 eval() with string argument</span>
+                            <span class="finding-file">src\browser\pw-tools-core.interactions.ts:243</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Dynamic code execution via eval() with string literal</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\browser\pw-tools-core.interactions.ts:243</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">obfuscation</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1027/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1027/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#16 eval() with string argument</span>
+                            <span class="finding-file">src\browser\pw-tools-core.interactions.ts:260</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Dynamic code execution via eval() with string literal</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src\browser\pw-tools-core.interactions.ts:260</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">obfuscation</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1027/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1027/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">skill</span>
+                            <span class="finding-title">#17 Suspicious URL in skill &#x27;prose&#x27;</span>
+                            <span class="finding-file">extensions\open-prose\skills\prose/SKILL.md</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Skill references raw.githubusercontent.com: https://raw.githubusercontent.com/openprose/prose/main/skills/open-prose/examples/48-habit-miner.pro</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>extensions\open-prose\skills\prose/SKILL.md</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">suspicious_url</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1102/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1102/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#18 CVE-2026-21636: Permission Model bypass documented</span>
+                            <span class="finding-file">SECURITY.md</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">SECURITY.md documents CVE-2026-21636 (Node.js Permission Model bypass). Users running Node.js &lt; 22.12.0 have no effective sandbox. Pre-install check must verify the user&#x27;s Node.js version.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>SECURITY.md</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">sandbox_escape</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Runtime sandboxing relies on a Node.js feature that was bypassable before v22.12.0</p>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2026-21636</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2026-21636" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2026-21636</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#19 GHSA-4mhr-g7xj-cg8j: Lobster path injection</span>
+                            <span class="finding-file">extensions\lobster\src\lobster-tool.test.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Lobster extension path parameter in extensions\lobster\src\lobster-tool.test.ts. GHSA-4mhr-g7xj-cg8j documented arbitrary code execution via lobsterPath/cwd injection (fixed in PR #5335).</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>extensions\lobster\src\lobster-tool.test.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">code_execution</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Extension path parameters were exploited for arbitrary code execution in production</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://github.com/advisories/GHSA-4mhr-g7xj-cg8j" target="_blank" rel="noopener">https://github.com/advisories/GHSA-4mhr-g7xj-cg8j</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#20 GHSA-4mhr-g7xj-cg8j: Lobster path injection</span>
+                            <span class="finding-file">extensions\lobster\src\lobster-tool.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Lobster extension path parameter in extensions\lobster\src\lobster-tool.ts. GHSA-4mhr-g7xj-cg8j documented arbitrary code execution via lobsterPath/cwd injection (fixed in PR #5335).</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>extensions\lobster\src\lobster-tool.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">code_execution</div>
+                </div>
+                <div class="detail-reason">
+                    <div class="detail-label">Why This Matters</div>
+                    <p>Extension path parameters were exploited for arbitrary code execution in production</p>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://github.com/advisories/GHSA-4mhr-g7xj-cg8j" target="_blank" rel="noopener">https://github.com/advisories/GHSA-4mhr-g7xj-cg8j</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#21 trustedProxies defaults to empty - proxy auth bypass risk</span>
+                            <span class="finding-file">src/gateway/net.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">trustedProxies configuration defaults to empty. When empty, the gateway ignores X-Forwarded-For headers and uses the raw socket address. Behind a reverse proxy, this means all connections appear as localhost and receive auto-approved auth. Reason: This is a classic proxy misconfiguration pattern (OWASP) that converts the localhost auto-approve into a full auth bypass for internet-facing deployments.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/gateway/net.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">config_weakness</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/www-project-web-security-testing-guide/" target="_blank" rel="noopener">https://owasp.org/www-project-web-security-testing-guide/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#22 dangerouslyDisableDeviceAuth flag exists</span>
+                            <span class="finding-file">src/config/types.gateway.ts:76</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Configuration flag to completely disable device authentication. If enabled, any WebSocket connection is accepted without identity verification. Reason: Labeled &#x27;break-glass only&#x27; but its existence means a single config change removes all auth. Exposed instances showed this was sometimes enabled in production.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/config/types.gateway.ts:76</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_config</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#23 allowInsecureAuth flag exists</span>
+                            <span class="finding-file">src/config/types.gateway.ts:74</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Flag to allow token-only authentication over unencrypted HTTP. Reason: Tokens sent over HTTP can be intercepted via MITM attacks on shared networks. Combined with operator.admin scope, intercepted tokens give full system control.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/config/types.gateway.ts:74</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_config</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#24 Host execution mode configurable at runtime</span>
+                            <span class="finding-file">src/agents/bash-tools.exec.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">tools.exec.host can be changed from &#x27;sandbox&#x27; to host execution at runtime via config.patch API. Reason: This is step 3 of the CVE-2026-25253 exploit chain - attacker switches execution from Docker sandbox to host machine, then runs arbitrary commands with the host user&#x27;s full privileges.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/agents/bash-tools.exec.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">sandbox_escape</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2026-25253" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2026-25253</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#25 exec.approvals.set API endpoint exists</span>
+                            <span class="finding-file">src/gateway/server-methods/exec-approvals.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">API endpoint exec.approvals.set allows programmatic control of execution approval settings. Reason: With operator.approvals scope (granted by default to operator role), approvals can be turned off entirely via a single API call.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/gateway/server-methods/exec-approvals.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">approval_bypass</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2026-25253" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2026-25253</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#26 SOUL_EVIL.md swap hook exists in codebase</span>
+                            <span class="finding-file">src/hooks/soul-evil.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Hook file soul-evil.ts can swap SOUL.md with SOUL_EVIL.md during &#x27;purge windows&#x27;. Reason: This mechanism can replace the agent&#x27;s persona with a malicious one, altering its behavior without the operator&#x27;s knowledge.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/hooks/soul-evil.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">backdoor</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://atlas.mitre.org/techniques/AML.T0051" target="_blank" rel="noopener">https://atlas.mitre.org/techniques/AML.T0051</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#27 operator.admin scope grants full control</span>
+                            <span class="finding-file">src/gateway/server-methods.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">The operator.admin scope grants unrestricted access to all gateway functions including config changes, exec approvals, conversation history, and credential access. Reason: Per CVE-2026-25253, the default operator role gets operator.admin automatically, meaning any stolen token gives complete control.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/gateway/server-methods.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">privilege_escalation</div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2026-25253</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2026-25253" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2026-25253</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-high">high</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#28 Operator role auto-assigned operator.admin scope</span>
+                            <span class="finding-file">src/gateway/server/ws-connection/message-handler.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">When no specific scopes are requested, operator role connections automatically receive operator.admin scope. Reason: This means every authenticated operator connection gets full administrative access by default, violating the principle of least privilege.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/gateway/server/ws-connection/message-handler.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">privilege_escalation</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2026-25253" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2026-25253</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#29 Known vulnerability in express</span>
+                            <span class="finding-file">package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Open redirect vulnerability in Express &lt; 4.21.0. Affected: &lt;4.21.0. Installed: ^5.2.1</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-29041</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-29041" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-29041</a><a href="https://github.com/advisories/GHSA-rv95-896h-c2vc" target="_blank" rel="noopener">https://github.com/advisories/GHSA-rv95-896h-c2vc</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#30 Known vulnerability in markdown-it</span>
+                            <span class="finding-file">package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">ReDoS vulnerability in markdown-it. Affected: &lt;13.0.2. Installed: ^14.1.0</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-21536</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-21536" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-21536</a><a href="https://github.com/advisories/GHSA-gjhv-pcwx-5jxc" target="_blank" rel="noopener">https://github.com/advisories/GHSA-gjhv-pcwx-5jxc</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#31 Known vulnerability in sharp</span>
+                            <span class="finding-file">package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">SSRF in ip package used by sharp. Affected: &lt;0.33.0. Installed: ^0.34.5</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-29415</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-29415" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-29415</a><a href="https://github.com/advisories/GHSA-2p57-rm9w-gvfp" target="_blank" rel="noopener">https://github.com/advisories/GHSA-2p57-rm9w-gvfp</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#32 Known vulnerability in undici</span>
+                            <span class="finding-file">package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">HTTP request smuggling in undici. Affected: &lt;6.19.2. Installed: ^7.21.0</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-30260</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-30260" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-30260</a><a href="https://github.com/advisories/GHSA-m4v8-wqvr-p9f7" target="_blank" rel="noopener">https://github.com/advisories/GHSA-m4v8-wqvr-p9f7</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#33 Known vulnerability in markdown-it</span>
+                            <span class="finding-file">extensions\matrix\package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">ReDoS vulnerability in markdown-it. Affected: &lt;13.0.2. Installed: 14.1.0</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>extensions\matrix\package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-21536</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-21536" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-21536</a><a href="https://github.com/advisories/GHSA-gjhv-pcwx-5jxc" target="_blank" rel="noopener">https://github.com/advisories/GHSA-gjhv-pcwx-5jxc</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#34 Known vulnerability in express</span>
+                            <span class="finding-file">extensions\msteams\package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Open redirect vulnerability in Express &lt; 4.21.0. Affected: &lt;4.21.0. Installed: ^5.2.1</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>extensions\msteams\package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-29041</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-29041" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-29041</a><a href="https://github.com/advisories/GHSA-rv95-896h-c2vc" target="_blank" rel="noopener">https://github.com/advisories/GHSA-rv95-896h-c2vc</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#35 Known vulnerability in undici</span>
+                            <span class="finding-file">extensions\zalo\package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">HTTP request smuggling in undici. Affected: &lt;6.19.2. Installed: 7.21.0</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>extensions\zalo\package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-30260</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-30260" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-30260</a><a href="https://github.com/advisories/GHSA-m4v8-wqvr-p9f7" target="_blank" rel="noopener">https://github.com/advisories/GHSA-m4v8-wqvr-p9f7</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#36 Known vulnerability in markdown-it</span>
+                            <span class="finding-file">vendor\a2ui\renderers\angular\package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">ReDoS vulnerability in markdown-it. Affected: &lt;13.0.2. Installed: ^14.1.0</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>vendor\a2ui\renderers\angular\package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-21536</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-21536" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-21536</a><a href="https://github.com/advisories/GHSA-gjhv-pcwx-5jxc" target="_blank" rel="noopener">https://github.com/advisories/GHSA-gjhv-pcwx-5jxc</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#37 Known vulnerability in markdown-it</span>
+                            <span class="finding-file">vendor\a2ui\renderers\lit\package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">ReDoS vulnerability in markdown-it. Affected: &lt;13.0.2. Installed: ^14.1.0</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>vendor\a2ui\renderers\lit\package.json</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2024-21536</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-21536" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2024-21536</a><a href="https://github.com/advisories/GHSA-gjhv-pcwx-5jxc" target="_blank" rel="noopener">https://github.com/advisories/GHSA-gjhv-pcwx-5jxc</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#38 Override for known CVE: tough-cookie</span>
+                            <span class="finding-file">package.json (pnpm.overrides)</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Prototype pollution in tough-cookie &lt; 4.1.3. Overridden to 4.1.3. CVE: CVE-2023-26136</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>package.json (pnpm.overrides)</code></div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2023-26136</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2023-26136" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2023-26136</a><a href="https://github.com/advisories/GHSA-72xf-g2v4-qvf3" target="_blank" rel="noopener">https://github.com/advisories/GHSA-72xf-g2v4-qvf3</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#39 Remote code execution via pipe</span>
+                            <span class="finding-file">scripts\sandbox-common-setup.sh:46</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Download and execute pattern (curl|bash) - MITRE ATT&amp;CK T1059.004</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>scripts\sandbox-common-setup.sh:46</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_command</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1059/004/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1059/004/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#40 Destructive rm -rf command</span>
+                            <span class="finding-file">scripts\sandbox-common-setup.sh:43</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Destructive deletion of system directories (MITRE ATT&amp;CK T1485)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>scripts\sandbox-common-setup.sh:43</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_command</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1485/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1485/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#41 Remote code execution via pipe</span>
+                            <span class="finding-file">scripts\test-install-sh-docker.sh:70</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Download and execute pattern (curl|bash) - MITRE ATT&amp;CK T1059.004</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>scripts\test-install-sh-docker.sh:70</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_command</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1059/004/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1059/004/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#42 Remote code execution via pipe</span>
+                            <span class="finding-file">scripts\docker\install-sh-e2e\run.sh:63</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Download and execute pattern (curl|bash) - MITRE ATT&amp;CK T1059.004</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>scripts\docker\install-sh-e2e\run.sh:63</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_command</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1059/004/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1059/004/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#43 Remote code execution via pipe</span>
+                            <span class="finding-file">scripts\docker\install-sh-e2e\run.sh:65</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Download and execute pattern (curl|bash) - MITRE ATT&amp;CK T1059.004</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>scripts\docker\install-sh-e2e\run.sh:65</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_command</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1059/004/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1059/004/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#44 Remote code execution via pipe</span>
+                            <span class="finding-file">scripts\docker\install-sh-e2e\run.sh:67</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Download and execute pattern (curl|bash) - MITRE ATT&amp;CK T1059.004</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>scripts\docker\install-sh-e2e\run.sh:67</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_command</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1059/004/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1059/004/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#45 Remote code execution via pipe</span>
+                            <span class="finding-file">scripts\docker\install-sh-nonroot\run.sh:15</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Download and execute pattern (curl|bash) - MITRE ATT&amp;CK T1059.004</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>scripts\docker\install-sh-nonroot\run.sh:15</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_command</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1059/004/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1059/004/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">source_code</span>
+                            <span class="finding-title">#46 Remote code execution via pipe</span>
+                            <span class="finding-file">scripts\docker\install-sh-smoke\run.sh:51</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Download and execute pattern (curl|bash) - MITRE ATT&amp;CK T1059.004</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>scripts\docker\install-sh-smoke\run.sh:51</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_command</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://attack.mitre.org/techniques/T1059/004/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1059/004/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">skill</span>
+                            <span class="finding-title">#47 Skill &#x27;prepare-pr&#x27; requests write access</span>
+                            <span class="finding-file">.agents\skills\prepare-pr/SKILL.md</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Skill requests File write access capability. Review carefully.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>.agents\skills\prepare-pr/SKILL.md</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">dangerous_permission</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener">https://owasp.org/www-project-top-10-for-large-language-model-applications/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#48 CVE-2026-25253: gatewayUrl persisted in localStorage</span>
+                            <span class="finding-file">ui/src/ui/storage.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">gatewayUrl is stored in localStorage. If an attacker&#x27;s URL is written here via the CVE-2026-25253 vector, it persists across sessions until manually cleared. Reason: Persistent storage of attacker-controlled gateway URL enables session-surviving attacks.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>ui/src/ui/storage.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">cve</div>
+                </div>
+                <div class="detail-row" style="margin-top:8px">
+                    <span class="cve-tag">CVE-2026-25253</span>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://nvd.nist.gov/vuln/detail/CVE-2026-25253" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2026-25253</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#49 Auto-approved device pairing logging detected</span>
+                            <span class="finding-file">src/gateway/server/ws-connection/message-handler.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Log message for auto-approved device pairing found. Confirms that silent auto-approval is actively implemented. Reason: Logging confirms the auto-approve code path is reachable.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/gateway/server/ws-connection/message-handler.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">auth_bypass</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/www-project-web-security-testing-guide/" target="_blank" rel="noopener">https://owasp.org/www-project-web-security-testing-guide/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#50 Credential template in .env.example</span>
+                            <span class="finding-file">.env.example</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Credential fields found in .env.example: TWILIO_AUTH_TOKEN. Users copy this to .env with real values stored in plaintext on disk. Reason: Exposed instances showed Anthropic API keys, Telegram bot tokens, Slack OAuth credentials all readable in plaintext.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>.env.example</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_storage</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#51 Gateway credentials in docker-setup.sh</span>
+                            <span class="finding-file">docker-setup.sh</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Gateway authentication tokens/passwords referenced in deployment file docker-setup.sh. Reason: Secrets in deployment scripts are committed to version control and readable by anyone with repo access. Use a secrets manager instead.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>docker-setup.sh</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_storage</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#52 Gateway credentials in docker-compose.yml</span>
+                            <span class="finding-file">docker-compose.yml</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Gateway authentication tokens/passwords referenced in deployment file docker-compose.yml. Reason: Secrets in deployment scripts are committed to version control and readable by anyone with repo access. Use a secrets manager instead.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>docker-compose.yml</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_storage</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#53 Gateway credentials in Dockerfile</span>
+                            <span class="finding-file">Dockerfile</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Gateway authentication tokens/passwords referenced in deployment file Dockerfile. Reason: Secrets in deployment scripts are committed to version control and readable by anyone with repo access. Use a secrets manager instead.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>Dockerfile</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">credential_storage</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#54 SOUL.md system prompt file readable via agent</span>
+                            <span class="finding-file">src/agents/workspace.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">SOUL.md defines the agent&#x27;s persona, instructions, and behavioral guidelines. Reason: An attacker with control access can &#x27;cat SOUL.md&#x27; to understand the agent&#x27;s full configuration, enabled capabilities, and operator instructions, as demonstrated in published research.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/agents/workspace.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">information_disclosure</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener">https://owasp.org/www-project-top-10-for-large-language-model-applications/</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-medium">medium</span>
+                            <span class="type-tag">vulnerability</span>
+                            <span class="finding-title">#55 WebSocket origin check allows loopback bypass</span>
+                            <span class="finding-file">src/gateway/origin-check.ts</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">Origin validation includes loopback/localhost exceptions. Reason: Combined with CVE-2026-25253, a malicious website can perform Cross-Site WebSocket Hijacking (CSWSH) by connecting to ws://localhost:18789 from the victim&#x27;s browser, since the origin check passes for loopback addresses.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>src/gateway/origin-check.ts</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">websocket_security</div>
+                </div>
+                <div class="ref-links">
+                    <div class="detail-label">References</div>
+                    <a href="https://owasp.org/www-community/attacks/Cross-Site_Request_Forgery_(CSRF)" target="_blank" rel="noopener">https://owasp.org/www-community/attacks/Cross-Site_Request_Forgery_(CSRF)</a><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-25253" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2026-25253</a>
+                </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="finding-card">
+                <details>
+                    <summary>
+                        <div class="finding-summary-row">
+                            <span class="badge badge-info">info</span>
+                            <span class="type-tag">dependency</span>
+                            <span class="finding-title">#56 pnpm overrides detected</span>
+                            <span class="finding-file">package.json</span>
+                        </div>
+                    </summary>
+                    <div class="finding-detail">
+                        
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">8 dependency overrides found. Overrides often indicate patched vulnerabilities or forced version pinning for security reasons.</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value"><code>package.json</code></div>
+                </div>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <div class="footer">
+            McAfee OpenClaw Pre-Install Security Auditor v1.0.0 |
+            Proof of Concept - For demonstration purposes |
+            &copy; 2026 McAfee Security
+        </div>
+    </div>
+
+    <script>
+        const severityCtx = document.getElementById('severityChart').getContext('2d');
+        new Chart(severityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ["medium", "high", "info", "critical"],
+                datasets: [{
+                    data: [27, 23, 1, 5],
+                    backgroundColor: ["#d29922", "#fd7e14", "#58a6ff", "#f85149"],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#c9d1d9', font: { size: 12 } }
+                    }
+                }
+            }
+        });
+
+        const catCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(catCtx, {
+            type: 'bar',
+            data: {
+                labels: ["dependency", "obfuscation", "credential_harvesting", "crypto_wallet", "gatekeeper_bypass", "dangerous_command", "suspicious_url", "dangerous_permission", "cve", "sandbox_escape", "code_execution", "auth_bypass", "config_weakness", "credential_storage", "dangerous_config", "approval_bypass", "information_disclosure", "backdoor", "websocket_security", "privilege_escalation"],
+                datasets: [{
+                    label: 'Findings',
+                    data: [18, 3, 1, 1, 1, 8, 1, 1, 2, 2, 2, 2, 1, 4, 2, 2, 1, 1, 1, 2],
+                    backgroundColor: '#58a6ff',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#8b949e' },
+                        grid: { color: '#21262d' }
+                    },
+                    y: {
+                        ticks: { color: '#c9d1d9', font: { size: 11 } },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

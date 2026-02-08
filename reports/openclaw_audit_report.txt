@@ -1,0 +1,427 @@
+======================================================================
+  McAfee OpenClaw Pre-Install Security Audit Report
+======================================================================
+
+  Generated:       2026-02-07 22:37:33
+  Repository:      C:\claw\openclaw_repo
+  Files Scanned:   4664
+  Skills Analyzed: 61
+
+----------------------------------------------------------------------
+  RISK SCORE:      100 / 100
+  RISK LEVEL:      CRITICAL
+  RECOMMENDATION:  DO NOT INSTALL - Significant security threats detected
+----------------------------------------------------------------------
+
+  Total Findings:  56
+  Critical:        5
+  High:            23
+  Medium:          27
+  Low:             0
+  Info:            1
+
+======================================================================
+  DETAILED FINDINGS
+======================================================================
+
+  [CRITICAL] #1: Solana wallet file access
+    File: extensions\google-gemini-cli-auth\oauth.ts
+    Line: 163
+    Direct access to Solana wallet files - matches known malicious skill targeting pattern
+    References:
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [CRITICAL] #2: macOS Gatekeeper bypass (xattr clear)
+    File: scripts\codesign-mac-app.sh
+    Line: 192
+    xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.
+    Reason: Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks
+    References:
+      - https://attack.mitre.org/techniques/T1553/001/
+
+  [CRITICAL] #3: CVE-2026-25253: gatewayUrl token exfiltration
+    File: ui/src/ui/app-settings.ts
+    CVE-2026-25253 (CVSS 8.8): gatewayUrl accepted from URL parameters without explicit user confirmation modal. An attacker can craft a link like ?gatewayUrl=attacker.com/ws to exfiltrate auth tokens over WebSocket, then chain to full RCE by disabling sandbox and exec approvals. Reason: The UI auto-connects to the supplied gateway URL transmitting credentials without user consent.
+    Reason: NVD-listed CVE discovered by depthfirst (Mav Levin), fixed in v2026.1.29
+    CVE: CVE-2026-25253
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2026-25253
+
+  [CRITICAL] #4: Localhost auto-approve bypasses authentication
+    File: src/gateway/server/ws-connection/message-handler.ts
+    Line: 691
+    Device pairing is auto-approved (silent: isLocalClient) for connections from localhost. When deployed behind a reverse proxy (nginx, Caddy), ALL connections arrive from 127.0.0.1, causing every connection to be auto-approved without authentication. Reason: Independent researcher found hundreds of exposed instances on Shodan with this misconfiguration, giving full credential access and command execution to unauthenticated users.
+    References:
+      - https://owasp.org/www-project-web-security-testing-guide/
+
+  [CRITICAL] #5: Exec approval bypass: ask='off' in elevated mode
+    File: src/agents/bash-tools.exec.ts
+    Line: 948
+    In elevated/full mode, execution approvals can be set to 'off', bypassing all user confirmation for shell commands. Reason: This is step 2 of the CVE-2026-25253 exploit chain - after stealing an auth token, attacker calls exec.approvals.set to disable all confirmation prompts before executing arbitrary commands.
+    CVE: CVE-2026-25253
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2026-25253
+
+  [HIGH] #6: Known vulnerability in json5
+    File: package.json
+    Prototype pollution in JSON5. Affected: <2.2.2. Installed: ^2.2.3
+    CVE: CVE-2022-46175
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2022-46175
+      - https://github.com/advisories/GHSA-9c47-m6qq-7p4h
+
+  [HIGH] #7: Known vulnerability in ws
+    File: package.json
+    DoS vulnerability in ws via large frame headers. Affected: <8.17.1. Installed: ^8.19.0
+    CVE: CVE-2024-37890
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-37890
+      - https://github.com/advisories/GHSA-3h5v-q93c-6h6q
+
+  [HIGH] #8: Known vulnerability in ws
+    File: extensions\voice-call\package.json
+    DoS vulnerability in ws via large frame headers. Affected: <8.17.1. Installed: ^8.19.0
+    CVE: CVE-2024-37890
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-37890
+      - https://github.com/advisories/GHSA-3h5v-q93c-6h6q
+
+  [HIGH] #9: Override for known CVE: fast-xml-parser
+    File: package.json (pnpm.overrides)
+    Prototype pollution in fast-xml-parser < 4.4.1. Overridden to 5.3.4. CVE: CVE-2024-47818
+    CVE: CVE-2024-47818
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-47818
+      - https://github.com/advisories/GHSA-mpg4-rc92-vx8v
+
+  [HIGH] #10: Override for known CVE: qs
+    File: package.json (pnpm.overrides)
+    Prototype pollution in qs. Overridden to 6.14.1. CVE: CVE-2022-24999
+    CVE: CVE-2022-24999
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2022-24999
+      - https://github.com/advisories/GHSA-hrpp-h998-j3pp
+
+  [HIGH] #11: Override for known CVE: tar
+    File: package.json (pnpm.overrides)
+    Denial of service via crafted tar files in tar < 6.2.1. Overridden to 7.5.7. CVE: CVE-2024-28863
+    CVE: CVE-2024-28863
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-28863
+      - https://github.com/advisories/GHSA-f5x3-32g6-xq36
+
+  [HIGH] #12: Known vulnerability in fastapi
+    File: skills\local-places\pyproject.toml
+    DoS via multipart form parsing in FastAPI. Affected: <0.109.1. Spec: fastapi>=0.110.0
+    CVE: CVE-2024-24762
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-24762
+      - https://github.com/advisories/GHSA-2jv5-9r88-3w3p
+
+  [HIGH] #13: eval() with string argument
+    File: apps\android\app\src\main\java\ai\openclaw\android\protocol\OpenClawProtocolConstants.kt
+    Line: 16
+    Dynamic code execution via eval() with string literal
+    References:
+      - https://attack.mitre.org/techniques/T1027/
+
+  [HIGH] #14: Hardcoded password
+    File: apps\shared\OpenClawKit\Sources\OpenClawKit\GatewayChannel.swift
+    Line: 100
+    Hardcoded password detected (OWASP A07:2021 - Security Misconfiguration)
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://attack.mitre.org/techniques/T1552/001/
+
+  [HIGH] #15: eval() with string argument
+    File: src\browser\pw-tools-core.interactions.ts
+    Line: 243
+    Dynamic code execution via eval() with string literal
+    References:
+      - https://attack.mitre.org/techniques/T1027/
+
+  [HIGH] #16: eval() with string argument
+    File: src\browser\pw-tools-core.interactions.ts
+    Line: 260
+    Dynamic code execution via eval() with string literal
+    References:
+      - https://attack.mitre.org/techniques/T1027/
+
+  [HIGH] #17: Suspicious URL in skill 'prose'
+    File: extensions\open-prose\skills\prose/SKILL.md
+    Skill references raw.githubusercontent.com: https://raw.githubusercontent.com/openprose/prose/main/skills/open-prose/examples/48-habit-miner.pro
+    References:
+      - https://attack.mitre.org/techniques/T1102/
+
+  [HIGH] #18: CVE-2026-21636: Permission Model bypass documented
+    File: SECURITY.md
+    SECURITY.md documents CVE-2026-21636 (Node.js Permission Model bypass). Users running Node.js < 22.12.0 have no effective sandbox. Pre-install check must verify the user's Node.js version.
+    Reason: Runtime sandboxing relies on a Node.js feature that was bypassable before v22.12.0
+    CVE: CVE-2026-21636
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2026-21636
+
+  [HIGH] #19: GHSA-4mhr-g7xj-cg8j: Lobster path injection
+    File: extensions\lobster\src\lobster-tool.test.ts
+    Lobster extension path parameter in extensions\lobster\src\lobster-tool.test.ts. GHSA-4mhr-g7xj-cg8j documented arbitrary code execution via lobsterPath/cwd injection (fixed in PR #5335).
+    Reason: Extension path parameters were exploited for arbitrary code execution in production
+    References:
+      - https://github.com/advisories/GHSA-4mhr-g7xj-cg8j
+
+  [HIGH] #20: GHSA-4mhr-g7xj-cg8j: Lobster path injection
+    File: extensions\lobster\src\lobster-tool.ts
+    Lobster extension path parameter in extensions\lobster\src\lobster-tool.ts. GHSA-4mhr-g7xj-cg8j documented arbitrary code execution via lobsterPath/cwd injection (fixed in PR #5335).
+    Reason: Extension path parameters were exploited for arbitrary code execution in production
+    References:
+      - https://github.com/advisories/GHSA-4mhr-g7xj-cg8j
+
+  [HIGH] #21: trustedProxies defaults to empty - proxy auth bypass risk
+    File: src/gateway/net.ts
+    trustedProxies configuration defaults to empty. When empty, the gateway ignores X-Forwarded-For headers and uses the raw socket address. Behind a reverse proxy, this means all connections appear as localhost and receive auto-approved auth. Reason: This is a classic proxy misconfiguration pattern (OWASP) that converts the localhost auto-approve into a full auth bypass for internet-facing deployments.
+    References:
+      - https://owasp.org/www-project-web-security-testing-guide/
+
+  [HIGH] #22: dangerouslyDisableDeviceAuth flag exists
+    File: src/config/types.gateway.ts
+    Line: 76
+    Configuration flag to completely disable device authentication. If enabled, any WebSocket connection is accepted without identity verification. Reason: Labeled 'break-glass only' but its existence means a single config change removes all auth. Exposed instances showed this was sometimes enabled in production.
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+
+  [HIGH] #23: allowInsecureAuth flag exists
+    File: src/config/types.gateway.ts
+    Line: 74
+    Flag to allow token-only authentication over unencrypted HTTP. Reason: Tokens sent over HTTP can be intercepted via MITM attacks on shared networks. Combined with operator.admin scope, intercepted tokens give full system control.
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+
+  [HIGH] #24: Host execution mode configurable at runtime
+    File: src/agents/bash-tools.exec.ts
+    tools.exec.host can be changed from 'sandbox' to host execution at runtime via config.patch API. Reason: This is step 3 of the CVE-2026-25253 exploit chain - attacker switches execution from Docker sandbox to host machine, then runs arbitrary commands with the host user's full privileges.
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2026-25253
+
+  [HIGH] #25: exec.approvals.set API endpoint exists
+    File: src/gateway/server-methods/exec-approvals.ts
+    API endpoint exec.approvals.set allows programmatic control of execution approval settings. Reason: With operator.approvals scope (granted by default to operator role), approvals can be turned off entirely via a single API call.
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2026-25253
+
+  [HIGH] #26: SOUL_EVIL.md swap hook exists in codebase
+    File: src/hooks/soul-evil.ts
+    Hook file soul-evil.ts can swap SOUL.md with SOUL_EVIL.md during 'purge windows'. Reason: This mechanism can replace the agent's persona with a malicious one, altering its behavior without the operator's knowledge.
+    References:
+      - https://atlas.mitre.org/techniques/AML.T0051
+
+  [HIGH] #27: operator.admin scope grants full control
+    File: src/gateway/server-methods.ts
+    The operator.admin scope grants unrestricted access to all gateway functions including config changes, exec approvals, conversation history, and credential access. Reason: Per CVE-2026-25253, the default operator role gets operator.admin automatically, meaning any stolen token gives complete control.
+    CVE: CVE-2026-25253
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2026-25253
+
+  [HIGH] #28: Operator role auto-assigned operator.admin scope
+    File: src/gateway/server/ws-connection/message-handler.ts
+    When no specific scopes are requested, operator role connections automatically receive operator.admin scope. Reason: This means every authenticated operator connection gets full administrative access by default, violating the principle of least privilege.
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2026-25253
+
+  [MEDIUM] #29: Known vulnerability in express
+    File: package.json
+    Open redirect vulnerability in Express < 4.21.0. Affected: <4.21.0. Installed: ^5.2.1
+    CVE: CVE-2024-29041
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-29041
+      - https://github.com/advisories/GHSA-rv95-896h-c2vc
+
+  [MEDIUM] #30: Known vulnerability in markdown-it
+    File: package.json
+    ReDoS vulnerability in markdown-it. Affected: <13.0.2. Installed: ^14.1.0
+    CVE: CVE-2024-21536
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-21536
+      - https://github.com/advisories/GHSA-gjhv-pcwx-5jxc
+
+  [MEDIUM] #31: Known vulnerability in sharp
+    File: package.json
+    SSRF in ip package used by sharp. Affected: <0.33.0. Installed: ^0.34.5
+    CVE: CVE-2024-29415
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-29415
+      - https://github.com/advisories/GHSA-2p57-rm9w-gvfp
+
+  [MEDIUM] #32: Known vulnerability in undici
+    File: package.json
+    HTTP request smuggling in undici. Affected: <6.19.2. Installed: ^7.21.0
+    CVE: CVE-2024-30260
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-30260
+      - https://github.com/advisories/GHSA-m4v8-wqvr-p9f7
+
+  [MEDIUM] #33: Known vulnerability in markdown-it
+    File: extensions\matrix\package.json
+    ReDoS vulnerability in markdown-it. Affected: <13.0.2. Installed: 14.1.0
+    CVE: CVE-2024-21536
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-21536
+      - https://github.com/advisories/GHSA-gjhv-pcwx-5jxc
+
+  [MEDIUM] #34: Known vulnerability in express
+    File: extensions\msteams\package.json
+    Open redirect vulnerability in Express < 4.21.0. Affected: <4.21.0. Installed: ^5.2.1
+    CVE: CVE-2024-29041
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-29041
+      - https://github.com/advisories/GHSA-rv95-896h-c2vc
+
+  [MEDIUM] #35: Known vulnerability in undici
+    File: extensions\zalo\package.json
+    HTTP request smuggling in undici. Affected: <6.19.2. Installed: 7.21.0
+    CVE: CVE-2024-30260
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-30260
+      - https://github.com/advisories/GHSA-m4v8-wqvr-p9f7
+
+  [MEDIUM] #36: Known vulnerability in markdown-it
+    File: vendor\a2ui\renderers\angular\package.json
+    ReDoS vulnerability in markdown-it. Affected: <13.0.2. Installed: ^14.1.0
+    CVE: CVE-2024-21536
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-21536
+      - https://github.com/advisories/GHSA-gjhv-pcwx-5jxc
+
+  [MEDIUM] #37: Known vulnerability in markdown-it
+    File: vendor\a2ui\renderers\lit\package.json
+    ReDoS vulnerability in markdown-it. Affected: <13.0.2. Installed: ^14.1.0
+    CVE: CVE-2024-21536
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2024-21536
+      - https://github.com/advisories/GHSA-gjhv-pcwx-5jxc
+
+  [MEDIUM] #38: Override for known CVE: tough-cookie
+    File: package.json (pnpm.overrides)
+    Prototype pollution in tough-cookie < 4.1.3. Overridden to 4.1.3. CVE: CVE-2023-26136
+    CVE: CVE-2023-26136
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2023-26136
+      - https://github.com/advisories/GHSA-72xf-g2v4-qvf3
+
+  [MEDIUM] #39: Remote code execution via pipe
+    File: scripts\sandbox-common-setup.sh
+    Line: 46
+    Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004
+    References:
+      - https://attack.mitre.org/techniques/T1059/004/
+
+  [MEDIUM] #40: Destructive rm -rf command
+    File: scripts\sandbox-common-setup.sh
+    Line: 43
+    Destructive deletion of system directories (MITRE ATT&CK T1485)
+    References:
+      - https://attack.mitre.org/techniques/T1485/
+
+  [MEDIUM] #41: Remote code execution via pipe
+    File: scripts\test-install-sh-docker.sh
+    Line: 70
+    Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004
+    References:
+      - https://attack.mitre.org/techniques/T1059/004/
+
+  [MEDIUM] #42: Remote code execution via pipe
+    File: scripts\docker\install-sh-e2e\run.sh
+    Line: 63
+    Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004
+    References:
+      - https://attack.mitre.org/techniques/T1059/004/
+
+  [MEDIUM] #43: Remote code execution via pipe
+    File: scripts\docker\install-sh-e2e\run.sh
+    Line: 65
+    Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004
+    References:
+      - https://attack.mitre.org/techniques/T1059/004/
+
+  [MEDIUM] #44: Remote code execution via pipe
+    File: scripts\docker\install-sh-e2e\run.sh
+    Line: 67
+    Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004
+    References:
+      - https://attack.mitre.org/techniques/T1059/004/
+
+  [MEDIUM] #45: Remote code execution via pipe
+    File: scripts\docker\install-sh-nonroot\run.sh
+    Line: 15
+    Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004
+    References:
+      - https://attack.mitre.org/techniques/T1059/004/
+
+  [MEDIUM] #46: Remote code execution via pipe
+    File: scripts\docker\install-sh-smoke\run.sh
+    Line: 51
+    Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004
+    References:
+      - https://attack.mitre.org/techniques/T1059/004/
+
+  [MEDIUM] #47: Skill 'prepare-pr' requests write access
+    File: .agents\skills\prepare-pr/SKILL.md
+    Skill requests File write access capability. Review carefully.
+    References:
+      - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+
+  [MEDIUM] #48: CVE-2026-25253: gatewayUrl persisted in localStorage
+    File: ui/src/ui/storage.ts
+    gatewayUrl is stored in localStorage. If an attacker's URL is written here via the CVE-2026-25253 vector, it persists across sessions until manually cleared. Reason: Persistent storage of attacker-controlled gateway URL enables session-surviving attacks.
+    CVE: CVE-2026-25253
+    References:
+      - https://nvd.nist.gov/vuln/detail/CVE-2026-25253
+
+  [MEDIUM] #49: Auto-approved device pairing logging detected
+    File: src/gateway/server/ws-connection/message-handler.ts
+    Log message for auto-approved device pairing found. Confirms that silent auto-approval is actively implemented. Reason: Logging confirms the auto-approve code path is reachable.
+    References:
+      - https://owasp.org/www-project-web-security-testing-guide/
+
+  [MEDIUM] #50: Credential template in .env.example
+    File: .env.example
+    Credential fields found in .env.example: TWILIO_AUTH_TOKEN. Users copy this to .env with real values stored in plaintext on disk. Reason: Exposed instances showed Anthropic API keys, Telegram bot tokens, Slack OAuth credentials all readable in plaintext.
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+
+  [MEDIUM] #51: Gateway credentials in docker-setup.sh
+    File: docker-setup.sh
+    Gateway authentication tokens/passwords referenced in deployment file docker-setup.sh. Reason: Secrets in deployment scripts are committed to version control and readable by anyone with repo access. Use a secrets manager instead.
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+
+  [MEDIUM] #52: Gateway credentials in docker-compose.yml
+    File: docker-compose.yml
+    Gateway authentication tokens/passwords referenced in deployment file docker-compose.yml. Reason: Secrets in deployment scripts are committed to version control and readable by anyone with repo access. Use a secrets manager instead.
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+
+  [MEDIUM] #53: Gateway credentials in Dockerfile
+    File: Dockerfile
+    Gateway authentication tokens/passwords referenced in deployment file Dockerfile. Reason: Secrets in deployment scripts are committed to version control and readable by anyone with repo access. Use a secrets manager instead.
+    References:
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+
+  [MEDIUM] #54: SOUL.md system prompt file readable via agent
+    File: src/agents/workspace.ts
+    SOUL.md defines the agent's persona, instructions, and behavioral guidelines. Reason: An attacker with control access can 'cat SOUL.md' to understand the agent's full configuration, enabled capabilities, and operator instructions, as demonstrated in published research.
+    References:
+      - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+
+  [MEDIUM] #55: WebSocket origin check allows loopback bypass
+    File: src/gateway/origin-check.ts
+    Origin validation includes loopback/localhost exceptions. Reason: Combined with CVE-2026-25253, a malicious website can perform Cross-Site WebSocket Hijacking (CSWSH) by connecting to ws://localhost:18789 from the victim's browser, since the origin check passes for loopback addresses.
+    References:
+      - https://owasp.org/www-community/attacks/Cross-Site_Request_Forgery_(CSRF)
+      - https://nvd.nist.gov/vuln/detail/CVE-2026-25253
+
+  [INFO] #56: pnpm overrides detected
+    File: package.json
+    8 dependency overrides found. Overrides often indicate patched vulnerabilities or forced version pinning for security reasons.
+
+======================================================================
+  McAfee OpenClaw Pre-Install Security Auditor v1.0.0
+======================================================================

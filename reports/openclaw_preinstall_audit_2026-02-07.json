@@ -1,0 +1,1448 @@
+{
+  "scan_metadata": {
+    "scan_date": "2026-02-07T22:37:33.965234",
+    "scanner_version": "1.0.0",
+    "repo_path": "C:\\claw\\openclaw_repo",
+    "files_scanned": 4664,
+    "skills_scanned": 61,
+    "scan_duration_seconds": 21.18
+  },
+  "risk_summary": {
+    "risk_score": 100,
+    "risk_level": "CRITICAL",
+    "recommendation": "DO NOT INSTALL - Significant security threats detected",
+    "total_findings": 56,
+    "severity_breakdown": {
+      "medium": 27,
+      "high": 23,
+      "info": 1,
+      "critical": 5
+    },
+    "category_breakdown": {
+      "dependency": 18,
+      "obfuscation": 3,
+      "credential_harvesting": 1,
+      "crypto_wallet": 1,
+      "gatekeeper_bypass": 1,
+      "dangerous_command": 8,
+      "suspicious_url": 1,
+      "dangerous_permission": 1,
+      "cve": 2,
+      "sandbox_escape": 2,
+      "code_execution": 2,
+      "auth_bypass": 2,
+      "config_weakness": 1,
+      "credential_storage": 4,
+      "dangerous_config": 2,
+      "approval_bypass": 2,
+      "information_disclosure": 1,
+      "backdoor": 1,
+      "websocket_security": 1,
+      "privilege_escalation": 2
+    },
+    "type_breakdown": {
+      "dependency": 18,
+      "source_code": 14,
+      "skill": 2,
+      "vulnerability": 22
+    },
+    "top_issues": [
+      {
+        "type": "source_code",
+        "category": "crypto_wallet",
+        "severity": "critical",
+        "title": "Solana wallet file access",
+        "description": "Direct access to Solana wallet files - matches known malicious skill targeting pattern",
+        "file": "extensions\\google-gemini-cli-auth\\oauth.ts",
+        "line": 163,
+        "references": [
+          "https://attack.mitre.org/techniques/T1552/001/"
+        ]
+      },
+      {
+        "type": "source_code",
+        "category": "gatekeeper_bypass",
+        "severity": "critical",
+        "title": "macOS Gatekeeper bypass (xattr clear)",
+        "description": "xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.",
+        "file": "scripts\\codesign-mac-app.sh",
+        "line": 192,
+        "reason": "Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks",
+        "references": [
+          "https://attack.mitre.org/techniques/T1553/001/"
+        ]
+      },
+      {
+        "type": "vulnerability",
+        "category": "cve",
+        "severity": "critical",
+        "title": "CVE-2026-25253: gatewayUrl token exfiltration",
+        "description": "CVE-2026-25253 (CVSS 8.8): gatewayUrl accepted from URL parameters without explicit user confirmation modal. An attacker can craft a link like ?gatewayUrl=attacker.com/ws to exfiltrate auth tokens over WebSocket, then chain to full RCE by disabling sandbox and exec approvals. Reason: The UI auto-connects to the supplied gateway URL transmitting credentials without user consent.",
+        "cve": "CVE-2026-25253",
+        "cvss": 8.8,
+        "file": "ui/src/ui/app-settings.ts",
+        "reason": "NVD-listed CVE discovered by depthfirst (Mav Levin), fixed in v2026.1.29",
+        "references": [
+          "https://nvd.nist.gov/vuln/detail/CVE-2026-25253"
+        ]
+      },
+      {
+        "type": "vulnerability",
+        "category": "auth_bypass",
+        "severity": "critical",
+        "title": "Localhost auto-approve bypasses authentication",
+        "description": "Device pairing is auto-approved (silent: isLocalClient) for connections from localhost. When deployed behind a reverse proxy (nginx, Caddy), ALL connections arrive from 127.0.0.1, causing every connection to be auto-approved without authentication. Reason: Independent researcher found hundreds of exposed instances on Shodan with this misconfiguration, giving full credential access and command execution to unauthenticated users.",
+        "file": "src/gateway/server/ws-connection/message-handler.ts",
+        "line": 691,
+        "references": [
+          "https://owasp.org/www-project-web-security-testing-guide/"
+        ]
+      },
+      {
+        "type": "vulnerability",
+        "category": "approval_bypass",
+        "severity": "critical",
+        "title": "Exec approval bypass: ask='off' in elevated mode",
+        "description": "In elevated/full mode, execution approvals can be set to 'off', bypassing all user confirmation for shell commands. Reason: This is step 2 of the CVE-2026-25253 exploit chain - after stealing an auth token, attacker calls exec.approvals.set to disable all confirmation prompts before executing arbitrary commands.",
+        "file": "src/agents/bash-tools.exec.ts",
+        "line": 948,
+        "cve": "CVE-2026-25253",
+        "references": [
+          "https://nvd.nist.gov/vuln/detail/CVE-2026-25253"
+        ]
+      },
+      {
+        "type": "dependency",
+        "severity": "high",
+        "title": "Known vulnerability in json5",
+        "description": "Prototype pollution in JSON5. Affected: <2.2.2. Installed: ^2.2.3",
+        "cve": "CVE-2022-46175",
+        "package": "json5",
+        "references": [
+          "https://nvd.nist.gov/vuln/detail/CVE-2022-46175",
+          "https://github.com/advisories/GHSA-9c47-m6qq-7p4h"
+        ],
+        "file": "package.json"
+      },
+      {
+        "type": "dependency",
+        "severity": "high",
+        "title": "Known vulnerability in ws",
+        "description": "DoS vulnerability in ws via large frame headers. Affected: <8.17.1. Installed: ^8.19.0",
+        "cve": "CVE-2024-37890",
+        "package": "ws",
+        "references": [
+          "https://nvd.nist.gov/vuln/detail/CVE-2024-37890",
+          "https://github.com/advisories/GHSA-3h5v-q93c-6h6q"
+        ],
+        "file": "package.json"
+      },
+      {
+        "type": "dependency",
+        "severity": "high",
+        "title": "Known vulnerability in ws",
+        "description": "DoS vulnerability in ws via large frame headers. Affected: <8.17.1. Installed: ^8.19.0",
+        "cve": "CVE-2024-37890",
+        "package": "ws",
+        "references": [
+          "https://nvd.nist.gov/vuln/detail/CVE-2024-37890",
+          "https://github.com/advisories/GHSA-3h5v-q93c-6h6q"
+        ],
+        "file": "extensions\\voice-call\\package.json"
+      },
+      {
+        "type": "dependency",
+        "severity": "high",
+        "title": "Override for known CVE: fast-xml-parser",
+        "description": "Prototype pollution in fast-xml-parser < 4.4.1. Overridden to 5.3.4. CVE: CVE-2024-47818",
+        "cve": "CVE-2024-47818",
+        "package": "fast-xml-parser",
+        "file": "package.json (pnpm.overrides)",
+        "references": [
+          "https://nvd.nist.gov/vuln/detail/CVE-2024-47818",
+          "https://github.com/advisories/GHSA-mpg4-rc92-vx8v"
+        ]
+      },
+      {
+        "type": "dependency",
+        "severity": "high",
+        "title": "Override for known CVE: qs",
+        "description": "Prototype pollution in qs. Overridden to 6.14.1. CVE: CVE-2022-24999",
+        "cve": "CVE-2022-24999",
+        "package": "qs",
+        "file": "package.json (pnpm.overrides)",
+        "references": [
+          "https://nvd.nist.gov/vuln/detail/CVE-2022-24999",
+          "https://github.com/advisories/GHSA-hrpp-h998-j3pp"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "type": "dependency",
+      "severity": "medium",
+      "title": "Known vulnerability in express",
+      "description": "Open redirect vulnerability in Express < 4.21.0. Affected: <4.21.0. Installed: ^5.2.1",
+      "cve": "CVE-2024-29041",
+      "package": "express",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-29041",
+        "https://github.com/advisories/GHSA-rv95-896h-c2vc"
+      ],
+      "file": "package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "high",
+      "title": "Known vulnerability in json5",
+      "description": "Prototype pollution in JSON5. Affected: <2.2.2. Installed: ^2.2.3",
+      "cve": "CVE-2022-46175",
+      "package": "json5",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2022-46175",
+        "https://github.com/advisories/GHSA-9c47-m6qq-7p4h"
+      ],
+      "file": "package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "medium",
+      "title": "Known vulnerability in markdown-it",
+      "description": "ReDoS vulnerability in markdown-it. Affected: <13.0.2. Installed: ^14.1.0",
+      "cve": "CVE-2024-21536",
+      "package": "markdown-it",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-21536",
+        "https://github.com/advisories/GHSA-gjhv-pcwx-5jxc"
+      ],
+      "file": "package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "medium",
+      "title": "Known vulnerability in sharp",
+      "description": "SSRF in ip package used by sharp. Affected: <0.33.0. Installed: ^0.34.5",
+      "cve": "CVE-2024-29415",
+      "package": "sharp",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-29415",
+        "https://github.com/advisories/GHSA-2p57-rm9w-gvfp"
+      ],
+      "file": "package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "medium",
+      "title": "Known vulnerability in undici",
+      "description": "HTTP request smuggling in undici. Affected: <6.19.2. Installed: ^7.21.0",
+      "cve": "CVE-2024-30260",
+      "package": "undici",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-30260",
+        "https://github.com/advisories/GHSA-m4v8-wqvr-p9f7"
+      ],
+      "file": "package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "high",
+      "title": "Known vulnerability in ws",
+      "description": "DoS vulnerability in ws via large frame headers. Affected: <8.17.1. Installed: ^8.19.0",
+      "cve": "CVE-2024-37890",
+      "package": "ws",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-37890",
+        "https://github.com/advisories/GHSA-3h5v-q93c-6h6q"
+      ],
+      "file": "package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "medium",
+      "title": "Known vulnerability in markdown-it",
+      "description": "ReDoS vulnerability in markdown-it. Affected: <13.0.2. Installed: 14.1.0",
+      "cve": "CVE-2024-21536",
+      "package": "markdown-it",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-21536",
+        "https://github.com/advisories/GHSA-gjhv-pcwx-5jxc"
+      ],
+      "file": "extensions\\matrix\\package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "medium",
+      "title": "Known vulnerability in express",
+      "description": "Open redirect vulnerability in Express < 4.21.0. Affected: <4.21.0. Installed: ^5.2.1",
+      "cve": "CVE-2024-29041",
+      "package": "express",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-29041",
+        "https://github.com/advisories/GHSA-rv95-896h-c2vc"
+      ],
+      "file": "extensions\\msteams\\package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "high",
+      "title": "Known vulnerability in ws",
+      "description": "DoS vulnerability in ws via large frame headers. Affected: <8.17.1. Installed: ^8.19.0",
+      "cve": "CVE-2024-37890",
+      "package": "ws",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-37890",
+        "https://github.com/advisories/GHSA-3h5v-q93c-6h6q"
+      ],
+      "file": "extensions\\voice-call\\package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "medium",
+      "title": "Known vulnerability in undici",
+      "description": "HTTP request smuggling in undici. Affected: <6.19.2. Installed: 7.21.0",
+      "cve": "CVE-2024-30260",
+      "package": "undici",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-30260",
+        "https://github.com/advisories/GHSA-m4v8-wqvr-p9f7"
+      ],
+      "file": "extensions\\zalo\\package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "medium",
+      "title": "Known vulnerability in markdown-it",
+      "description": "ReDoS vulnerability in markdown-it. Affected: <13.0.2. Installed: ^14.1.0",
+      "cve": "CVE-2024-21536",
+      "package": "markdown-it",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-21536",
+        "https://github.com/advisories/GHSA-gjhv-pcwx-5jxc"
+      ],
+      "file": "vendor\\a2ui\\renderers\\angular\\package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "medium",
+      "title": "Known vulnerability in markdown-it",
+      "description": "ReDoS vulnerability in markdown-it. Affected: <13.0.2. Installed: ^14.1.0",
+      "cve": "CVE-2024-21536",
+      "package": "markdown-it",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-21536",
+        "https://github.com/advisories/GHSA-gjhv-pcwx-5jxc"
+      ],
+      "file": "vendor\\a2ui\\renderers\\lit\\package.json"
+    },
+    {
+      "type": "dependency",
+      "severity": "info",
+      "title": "pnpm overrides detected",
+      "description": "8 dependency overrides found. Overrides often indicate patched vulnerabilities or forced version pinning for security reasons.",
+      "details": {
+        "fast-xml-parser": "5.3.4",
+        "form-data": "2.5.4",
+        "@hono/node-server>hono": "4.11.8",
+        "hono": "4.11.8",
+        "qs": "6.14.1",
+        "@sinclair/typebox": "0.34.48",
+        "tar": "7.5.7",
+        "tough-cookie": "4.1.3"
+      },
+      "file": "package.json",
+      "references": []
+    },
+    {
+      "type": "dependency",
+      "severity": "high",
+      "title": "Override for known CVE: fast-xml-parser",
+      "description": "Prototype pollution in fast-xml-parser < 4.4.1. Overridden to 5.3.4. CVE: CVE-2024-47818",
+      "cve": "CVE-2024-47818",
+      "package": "fast-xml-parser",
+      "file": "package.json (pnpm.overrides)",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-47818",
+        "https://github.com/advisories/GHSA-mpg4-rc92-vx8v"
+      ]
+    },
+    {
+      "type": "dependency",
+      "severity": "high",
+      "title": "Override for known CVE: qs",
+      "description": "Prototype pollution in qs. Overridden to 6.14.1. CVE: CVE-2022-24999",
+      "cve": "CVE-2022-24999",
+      "package": "qs",
+      "file": "package.json (pnpm.overrides)",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2022-24999",
+        "https://github.com/advisories/GHSA-hrpp-h998-j3pp"
+      ]
+    },
+    {
+      "type": "dependency",
+      "severity": "medium",
+      "title": "Override for known CVE: tough-cookie",
+      "description": "Prototype pollution in tough-cookie < 4.1.3. Overridden to 4.1.3. CVE: CVE-2023-26136",
+      "cve": "CVE-2023-26136",
+      "package": "tough-cookie",
+      "file": "package.json (pnpm.overrides)",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2023-26136",
+        "https://github.com/advisories/GHSA-72xf-g2v4-qvf3"
+      ]
+    },
+    {
+      "type": "dependency",
+      "severity": "high",
+      "title": "Override for known CVE: tar",
+      "description": "Denial of service via crafted tar files in tar < 6.2.1. Overridden to 7.5.7. CVE: CVE-2024-28863",
+      "cve": "CVE-2024-28863",
+      "package": "tar",
+      "file": "package.json (pnpm.overrides)",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-28863",
+        "https://github.com/advisories/GHSA-f5x3-32g6-xq36"
+      ]
+    },
+    {
+      "type": "dependency",
+      "severity": "high",
+      "title": "Known vulnerability in fastapi",
+      "description": "DoS via multipart form parsing in FastAPI. Affected: <0.109.1. Spec: fastapi>=0.110.0",
+      "cve": "CVE-2024-24762",
+      "package": "fastapi",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-24762",
+        "https://github.com/advisories/GHSA-2jv5-9r88-3w3p"
+      ],
+      "file": "skills\\local-places\\pyproject.toml"
+    },
+    {
+      "type": "source_code",
+      "category": "obfuscation",
+      "severity": "high",
+      "title": "eval() with string argument",
+      "description": "Dynamic code execution via eval() with string literal",
+      "file": "apps\\android\\app\\src\\main\\java\\ai\\openclaw\\android\\protocol\\OpenClawProtocolConstants.kt",
+      "line": 16,
+      "match": "Eval(\"",
+      "references": [
+        "https://attack.mitre.org/techniques/T1027/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "high",
+      "title": "Hardcoded password",
+      "description": "Hardcoded password detected (OWASP A07:2021 - Security Misconfiguration)",
+      "file": "apps\\shared\\OpenClawKit\\Sources\\OpenClawKit\\GatewayChannel.swift",
+      "line": 100,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "crypto_wallet",
+      "severity": "critical",
+      "title": "Solana wallet file access",
+      "description": "Direct access to Solana wallet files - matches known malicious skill targeting pattern",
+      "file": "extensions\\google-gemini-cli-auth\\oauth.ts",
+      "line": 163,
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "gatekeeper_bypass",
+      "severity": "critical",
+      "title": "macOS Gatekeeper bypass (xattr clear)",
+      "description": "xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.",
+      "file": "scripts\\codesign-mac-app.sh",
+      "line": 192,
+      "reason": "Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks",
+      "references": [
+        "https://attack.mitre.org/techniques/T1553/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "dangerous_command",
+      "severity": "medium",
+      "title": "Remote code execution via pipe",
+      "description": "Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004",
+      "file": "scripts\\sandbox-common-setup.sh",
+      "line": 46,
+      "match": "curl -fsSL https://bun.sh/install | bash",
+      "references": [
+        "https://attack.mitre.org/techniques/T1059/004/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "dangerous_command",
+      "severity": "medium",
+      "title": "Destructive rm -rf command",
+      "description": "Destructive deletion of system directories (MITRE ATT&CK T1485)",
+      "file": "scripts\\sandbox-common-setup.sh",
+      "line": 43,
+      "match": "rm -rf /var",
+      "references": [
+        "https://attack.mitre.org/techniques/T1485/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "dangerous_command",
+      "severity": "medium",
+      "title": "Remote code execution via pipe",
+      "description": "Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004",
+      "file": "scripts\\test-install-sh-docker.sh",
+      "line": 70,
+      "match": "curl -fsSL \\\"$CLI_INSTALL_URL\\\" | bash",
+      "references": [
+        "https://attack.mitre.org/techniques/T1059/004/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "dangerous_command",
+      "severity": "medium",
+      "title": "Remote code execution via pipe",
+      "description": "Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004",
+      "file": "scripts\\docker\\install-sh-e2e\\run.sh",
+      "line": 63,
+      "match": "curl -fsSL \"$INSTALL_URL\" | bash",
+      "references": [
+        "https://attack.mitre.org/techniques/T1059/004/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "dangerous_command",
+      "severity": "medium",
+      "title": "Remote code execution via pipe",
+      "description": "Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004",
+      "file": "scripts\\docker\\install-sh-e2e\\run.sh",
+      "line": 65,
+      "match": "curl -fsSL \"$INSTALL_URL\" | bash",
+      "references": [
+        "https://attack.mitre.org/techniques/T1059/004/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "dangerous_command",
+      "severity": "medium",
+      "title": "Remote code execution via pipe",
+      "description": "Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004",
+      "file": "scripts\\docker\\install-sh-e2e\\run.sh",
+      "line": 67,
+      "match": "curl -fsSL \"$INSTALL_URL\" | bash",
+      "references": [
+        "https://attack.mitre.org/techniques/T1059/004/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "dangerous_command",
+      "severity": "medium",
+      "title": "Remote code execution via pipe",
+      "description": "Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004",
+      "file": "scripts\\docker\\install-sh-nonroot\\run.sh",
+      "line": 15,
+      "match": "curl -fsSL \"$INSTALL_URL\" | bash",
+      "references": [
+        "https://attack.mitre.org/techniques/T1059/004/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "dangerous_command",
+      "severity": "medium",
+      "title": "Remote code execution via pipe",
+      "description": "Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004",
+      "file": "scripts\\docker\\install-sh-smoke\\run.sh",
+      "line": 51,
+      "match": "curl -fsSL \"$INSTALL_URL\" | bash",
+      "references": [
+        "https://attack.mitre.org/techniques/T1059/004/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "obfuscation",
+      "severity": "high",
+      "title": "eval() with string argument",
+      "description": "Dynamic code execution via eval() with string literal",
+      "file": "src\\browser\\pw-tools-core.interactions.ts",
+      "line": 243,
+      "match": "eval(\"",
+      "references": [
+        "https://attack.mitre.org/techniques/T1027/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "obfuscation",
+      "severity": "high",
+      "title": "eval() with string argument",
+      "description": "Dynamic code execution via eval() with string literal",
+      "file": "src\\browser\\pw-tools-core.interactions.ts",
+      "line": 260,
+      "match": "eval(\"",
+      "references": [
+        "https://attack.mitre.org/techniques/T1027/"
+      ]
+    },
+    {
+      "type": "skill",
+      "category": "suspicious_url",
+      "severity": "high",
+      "title": "Suspicious URL in skill 'prose'",
+      "description": "Skill references raw.githubusercontent.com: https://raw.githubusercontent.com/openprose/prose/main/skills/open-prose/examples/48-habit-miner.pro",
+      "file": "extensions\\open-prose\\skills\\prose/SKILL.md",
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "skill",
+      "category": "dangerous_permission",
+      "severity": "medium",
+      "title": "Skill 'prepare-pr' requests write access",
+      "description": "Skill requests File write access capability. Review carefully.",
+      "file": ".agents\\skills\\prepare-pr/SKILL.md",
+      "references": [
+        "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "cve",
+      "severity": "critical",
+      "title": "CVE-2026-25253: gatewayUrl token exfiltration",
+      "description": "CVE-2026-25253 (CVSS 8.8): gatewayUrl accepted from URL parameters without explicit user confirmation modal. An attacker can craft a link like ?gatewayUrl=attacker.com/ws to exfiltrate auth tokens over WebSocket, then chain to full RCE by disabling sandbox and exec approvals. Reason: The UI auto-connects to the supplied gateway URL transmitting credentials without user consent.",
+      "cve": "CVE-2026-25253",
+      "cvss": 8.8,
+      "file": "ui/src/ui/app-settings.ts",
+      "reason": "NVD-listed CVE discovered by depthfirst (Mav Levin), fixed in v2026.1.29",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-25253"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "cve",
+      "severity": "medium",
+      "title": "CVE-2026-25253: gatewayUrl persisted in localStorage",
+      "description": "gatewayUrl is stored in localStorage. If an attacker's URL is written here via the CVE-2026-25253 vector, it persists across sessions until manually cleared. Reason: Persistent storage of attacker-controlled gateway URL enables session-surviving attacks.",
+      "cve": "CVE-2026-25253",
+      "file": "ui/src/ui/storage.ts",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-25253"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "sandbox_escape",
+      "severity": "high",
+      "title": "CVE-2026-21636: Permission Model bypass documented",
+      "description": "SECURITY.md documents CVE-2026-21636 (Node.js Permission Model bypass). Users running Node.js < 22.12.0 have no effective sandbox. Pre-install check must verify the user's Node.js version.",
+      "file": "SECURITY.md",
+      "cve": "CVE-2026-21636",
+      "reason": "Runtime sandboxing relies on a Node.js feature that was bypassable before v22.12.0",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-21636"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "code_execution",
+      "severity": "high",
+      "title": "GHSA-4mhr-g7xj-cg8j: Lobster path injection",
+      "description": "Lobster extension path parameter in extensions\\lobster\\src\\lobster-tool.test.ts. GHSA-4mhr-g7xj-cg8j documented arbitrary code execution via lobsterPath/cwd injection (fixed in PR #5335).",
+      "file": "extensions\\lobster\\src\\lobster-tool.test.ts",
+      "reason": "Extension path parameters were exploited for arbitrary code execution in production",
+      "references": [
+        "https://github.com/advisories/GHSA-4mhr-g7xj-cg8j"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "code_execution",
+      "severity": "high",
+      "title": "GHSA-4mhr-g7xj-cg8j: Lobster path injection",
+      "description": "Lobster extension path parameter in extensions\\lobster\\src\\lobster-tool.ts. GHSA-4mhr-g7xj-cg8j documented arbitrary code execution via lobsterPath/cwd injection (fixed in PR #5335).",
+      "file": "extensions\\lobster\\src\\lobster-tool.ts",
+      "reason": "Extension path parameters were exploited for arbitrary code execution in production",
+      "references": [
+        "https://github.com/advisories/GHSA-4mhr-g7xj-cg8j"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "auth_bypass",
+      "severity": "critical",
+      "title": "Localhost auto-approve bypasses authentication",
+      "description": "Device pairing is auto-approved (silent: isLocalClient) for connections from localhost. When deployed behind a reverse proxy (nginx, Caddy), ALL connections arrive from 127.0.0.1, causing every connection to be auto-approved without authentication. Reason: Independent researcher found hundreds of exposed instances on Shodan with this misconfiguration, giving full credential access and command execution to unauthenticated users.",
+      "file": "src/gateway/server/ws-connection/message-handler.ts",
+      "line": 691,
+      "references": [
+        "https://owasp.org/www-project-web-security-testing-guide/"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "auth_bypass",
+      "severity": "medium",
+      "title": "Auto-approved device pairing logging detected",
+      "description": "Log message for auto-approved device pairing found. Confirms that silent auto-approval is actively implemented. Reason: Logging confirms the auto-approve code path is reachable.",
+      "file": "src/gateway/server/ws-connection/message-handler.ts",
+      "references": [
+        "https://owasp.org/www-project-web-security-testing-guide/"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "config_weakness",
+      "severity": "high",
+      "title": "trustedProxies defaults to empty - proxy auth bypass risk",
+      "description": "trustedProxies configuration defaults to empty. When empty, the gateway ignores X-Forwarded-For headers and uses the raw socket address. Behind a reverse proxy, this means all connections appear as localhost and receive auto-approved auth. Reason: This is a classic proxy misconfiguration pattern (OWASP) that converts the localhost auto-approve into a full auth bypass for internet-facing deployments.",
+      "file": "src/gateway/net.ts",
+      "references": [
+        "https://owasp.org/www-project-web-security-testing-guide/"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "credential_storage",
+      "severity": "medium",
+      "title": "Credential template in .env.example",
+      "description": "Credential fields found in .env.example: TWILIO_AUTH_TOKEN. Users copy this to .env with real values stored in plaintext on disk. Reason: Exposed instances showed Anthropic API keys, Telegram bot tokens, Slack OAuth credentials all readable in plaintext.",
+      "file": ".env.example",
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "credential_storage",
+      "severity": "medium",
+      "title": "Gateway credentials in docker-setup.sh",
+      "description": "Gateway authentication tokens/passwords referenced in deployment file docker-setup.sh. Reason: Secrets in deployment scripts are committed to version control and readable by anyone with repo access. Use a secrets manager instead.",
+      "file": "docker-setup.sh",
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "credential_storage",
+      "severity": "medium",
+      "title": "Gateway credentials in docker-compose.yml",
+      "description": "Gateway authentication tokens/passwords referenced in deployment file docker-compose.yml. Reason: Secrets in deployment scripts are committed to version control and readable by anyone with repo access. Use a secrets manager instead.",
+      "file": "docker-compose.yml",
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "credential_storage",
+      "severity": "medium",
+      "title": "Gateway credentials in Dockerfile",
+      "description": "Gateway authentication tokens/passwords referenced in deployment file Dockerfile. Reason: Secrets in deployment scripts are committed to version control and readable by anyone with repo access. Use a secrets manager instead.",
+      "file": "Dockerfile",
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "dangerous_config",
+      "severity": "high",
+      "title": "dangerouslyDisableDeviceAuth flag exists",
+      "description": "Configuration flag to completely disable device authentication. If enabled, any WebSocket connection is accepted without identity verification. Reason: Labeled 'break-glass only' but its existence means a single config change removes all auth. Exposed instances showed this was sometimes enabled in production.",
+      "file": "src/config/types.gateway.ts",
+      "line": 76,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "dangerous_config",
+      "severity": "high",
+      "title": "allowInsecureAuth flag exists",
+      "description": "Flag to allow token-only authentication over unencrypted HTTP. Reason: Tokens sent over HTTP can be intercepted via MITM attacks on shared networks. Combined with operator.admin scope, intercepted tokens give full system control.",
+      "file": "src/config/types.gateway.ts",
+      "line": 74,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "approval_bypass",
+      "severity": "critical",
+      "title": "Exec approval bypass: ask='off' in elevated mode",
+      "description": "In elevated/full mode, execution approvals can be set to 'off', bypassing all user confirmation for shell commands. Reason: This is step 2 of the CVE-2026-25253 exploit chain - after stealing an auth token, attacker calls exec.approvals.set to disable all confirmation prompts before executing arbitrary commands.",
+      "file": "src/agents/bash-tools.exec.ts",
+      "line": 948,
+      "cve": "CVE-2026-25253",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-25253"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "sandbox_escape",
+      "severity": "high",
+      "title": "Host execution mode configurable at runtime",
+      "description": "tools.exec.host can be changed from 'sandbox' to host execution at runtime via config.patch API. Reason: This is step 3 of the CVE-2026-25253 exploit chain - attacker switches execution from Docker sandbox to host machine, then runs arbitrary commands with the host user's full privileges.",
+      "file": "src/agents/bash-tools.exec.ts",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-25253"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "approval_bypass",
+      "severity": "high",
+      "title": "exec.approvals.set API endpoint exists",
+      "description": "API endpoint exec.approvals.set allows programmatic control of execution approval settings. Reason: With operator.approvals scope (granted by default to operator role), approvals can be turned off entirely via a single API call.",
+      "file": "src/gateway/server-methods/exec-approvals.ts",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-25253"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "information_disclosure",
+      "severity": "medium",
+      "title": "SOUL.md system prompt file readable via agent",
+      "description": "SOUL.md defines the agent's persona, instructions, and behavioral guidelines. Reason: An attacker with control access can 'cat SOUL.md' to understand the agent's full configuration, enabled capabilities, and operator instructions, as demonstrated in published research.",
+      "file": "src/agents/workspace.ts",
+      "references": [
+        "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "backdoor",
+      "severity": "high",
+      "title": "SOUL_EVIL.md swap hook exists in codebase",
+      "description": "Hook file soul-evil.ts can swap SOUL.md with SOUL_EVIL.md during 'purge windows'. Reason: This mechanism can replace the agent's persona with a malicious one, altering its behavior without the operator's knowledge.",
+      "file": "src/hooks/soul-evil.ts",
+      "references": [
+        "https://atlas.mitre.org/techniques/AML.T0051"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "websocket_security",
+      "severity": "medium",
+      "title": "WebSocket origin check allows loopback bypass",
+      "description": "Origin validation includes loopback/localhost exceptions. Reason: Combined with CVE-2026-25253, a malicious website can perform Cross-Site WebSocket Hijacking (CSWSH) by connecting to ws://localhost:18789 from the victim's browser, since the origin check passes for loopback addresses.",
+      "file": "src/gateway/origin-check.ts",
+      "references": [
+        "https://owasp.org/www-community/attacks/Cross-Site_Request_Forgery_(CSRF)",
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-25253"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "privilege_escalation",
+      "severity": "high",
+      "title": "operator.admin scope grants full control",
+      "description": "The operator.admin scope grants unrestricted access to all gateway functions including config changes, exec approvals, conversation history, and credential access. Reason: Per CVE-2026-25253, the default operator role gets operator.admin automatically, meaning any stolen token gives complete control.",
+      "file": "src/gateway/server-methods.ts",
+      "cve": "CVE-2026-25253",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-25253"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "category": "privilege_escalation",
+      "severity": "high",
+      "title": "Operator role auto-assigned operator.admin scope",
+      "description": "When no specific scopes are requested, operator role connections automatically receive operator.admin scope. Reason: This means every authenticated operator connection gets full administrative access by default, violating the principle of least privilege.",
+      "file": "src/gateway/server/ws-connection/message-handler.ts",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-25253"
+      ]
+    }
+  ],
+  "skill_metadata": [
+    {
+      "name": "1password",
+      "path": "skills\\1password",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "apple-notes",
+      "path": "skills\\apple-notes",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "apple-reminders",
+      "path": "skills\\apple-reminders",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "bear-notes",
+      "path": "skills\\bear-notes",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "blogwatcher",
+      "path": "skills\\blogwatcher",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "blucli",
+      "path": "skills\\blucli",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "bluebubbles",
+      "path": "skills\\bluebubbles",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "camsnap",
+      "path": "skills\\camsnap",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "canvas",
+      "path": "skills\\canvas",
+      "has_scripts": false,
+      "referenced_tools": [
+        "present",
+        "present",
+        "navigate",
+        "snapshot",
+        "hide"
+      ],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "clawhub",
+      "path": "skills\\clawhub",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "coding-agent",
+      "path": "skills\\coding-agent",
+      "has_scripts": false,
+      "referenced_tools": [
+        "log",
+        "poll",
+        "write",
+        "submit",
+        "kill",
+        "list",
+        "list",
+        "log"
+      ],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "discord",
+      "path": "skills\\discord",
+      "has_scripts": false,
+      "referenced_tools": [
+        "send"
+      ],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "eightctl",
+      "path": "skills\\eightctl",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "food-order",
+      "path": "skills\\food-order",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "gemini",
+      "path": "skills\\gemini",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "gifgrep",
+      "path": "skills\\gifgrep",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "github",
+      "path": "skills\\github",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "gog",
+      "path": "skills\\gog",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "goplaces",
+      "path": "skills\\goplaces",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "healthcheck",
+      "path": "skills\\healthcheck",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "filesystem",
+        "network"
+      ]
+    },
+    {
+      "name": "himalaya",
+      "path": "skills\\himalaya",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "imsg",
+      "path": "skills\\imsg",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "local-places",
+      "path": "skills\\local-places",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "mcporter",
+      "path": "skills\\mcporter",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "model-usage",
+      "path": "skills\\model-usage",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "nano-banana-pro",
+      "path": "skills\\nano-banana-pro",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "nano-pdf",
+      "path": "skills\\nano-pdf",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "notion",
+      "path": "skills\\notion",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "obsidian",
+      "path": "skills\\obsidian",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "openai-image-gen",
+      "path": "skills\\openai-image-gen",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "openai-whisper",
+      "path": "skills\\openai-whisper",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "openai-whisper-api",
+      "path": "skills\\openai-whisper-api",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "openhue",
+      "path": "skills\\openhue",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "oracle",
+      "path": "skills\\oracle",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "ordercli",
+      "path": "skills\\ordercli",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "peekaboo",
+      "path": "skills\\peekaboo",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "sag",
+      "path": "skills\\sag",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "session-logs",
+      "path": "skills\\session-logs",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": []
+    },
+    {
+      "name": "sherpa-onnx-tts",
+      "path": "skills\\sherpa-onnx-tts",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "skill-creator",
+      "path": "skills\\skill-creator",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "slack",
+      "path": "skills\\slack",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "songsee",
+      "path": "skills\\songsee",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "sonoscli",
+      "path": "skills\\sonoscli",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "spotify-player",
+      "path": "skills\\spotify-player",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "summarize",
+      "path": "skills\\summarize",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "things-mac",
+      "path": "skills\\things-mac",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "tmux",
+      "path": "skills\\tmux",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "trello",
+      "path": "skills\\trello",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "video-frames",
+      "path": "skills\\video-frames",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "voice-call",
+      "path": "skills\\voice-call",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "wacli",
+      "path": "skills\\wacli",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "weather",
+      "path": "skills\\weather",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "feishu-doc",
+      "path": "extensions\\feishu\\skills\\feishu-doc",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "feishu-drive",
+      "path": "extensions\\feishu\\skills\\feishu-drive",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "filesystem",
+        "network"
+      ]
+    },
+    {
+      "name": "feishu-perm",
+      "path": "extensions\\feishu\\skills\\feishu-perm",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": []
+    },
+    {
+      "name": "feishu-wiki",
+      "path": "extensions\\feishu\\skills\\feishu-wiki",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "lobster",
+      "path": "extensions\\lobster",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "prose",
+      "path": "extensions\\open-prose\\skills\\prose",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "merge-pr",
+      "path": ".agents\\skills\\merge-pr",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "prepare-pr",
+      "path": ".agents\\skills\\prepare-pr",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    },
+    {
+      "name": "review-pr",
+      "path": ".agents\\skills\\review-pr",
+      "has_scripts": false,
+      "referenced_tools": [],
+      "permissions_requested": [
+        "network"
+      ]
+    }
+  ]
+}

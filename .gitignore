@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Archive (old files kept for reference only)
+archive/
+
+# Reports - keep the dated audit report but ignore auto-generated timestamped outputs
+reports/openclaw_audit_*.html
+reports/openclaw_audit_*.json
+reports/*.zip
+!reports/openclaw_preinstall_audit_*.html
+!reports/openclaw_preinstall_audit_*.json
+
+# Logs
+logs/
+*.log
+
+
+openclaw_repo/

@@ -1,0 +1,957 @@
+{
+  "scan_metadata": {
+    "scan_date": "2026-02-07T22:56:38.260003",
+    "scanner_version": "1.0.0",
+    "report_profile": "full",
+    "repo_path": "C:\\claw\\mcafee_openclaw_auditor",
+    "files_scanned": 15,
+    "skills_scanned": 0,
+    "scan_duration_seconds": 0.39
+  },
+  "risk_summary": {
+    "risk_score": 100,
+    "risk_level": "CRITICAL",
+    "recommendation": "DO NOT INSTALL - Significant security threats detected",
+    "total_findings": 62,
+    "severity_breakdown": {
+      "medium": 14,
+      "critical": 48
+    },
+    "category_breakdown": {
+      "dependency": 1,
+      "malicious_ip": 9,
+      "malicious_domain": 4,
+      "credential_theft": 5,
+      "paste_service": 13,
+      "credential_harvesting": 14,
+      "obfuscation": 1,
+      "gatekeeper_bypass": 4,
+      "crypto_wallet": 9,
+      "ssrf": 1,
+      "dangerous_command": 1
+    },
+    "type_breakdown": {
+      "dependency": 1,
+      "source_code": 61
+    },
+    "top_issues": [
+      {
+        "type": "source_code",
+        "category": "malicious_ip",
+        "severity": "critical",
+        "title": "Known malicious IP: 91.92.242.30",
+        "description": "C2 server used in ClawHavoc campaign to host dropper payloads",
+        "file": "README.md",
+        "line": 101,
+        "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+        "references": [
+          "https://attack.mitre.org/techniques/T1071/001/"
+        ]
+      },
+      {
+        "type": "source_code",
+        "category": "malicious_ip",
+        "severity": "critical",
+        "title": "Known malicious IP: 54.91.154.110",
+        "description": "Reverse shell callback endpoint (AuthTool campaign, port 13338)",
+        "file": "README.md",
+        "line": 102,
+        "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+        "references": [
+          "https://attack.mitre.org/techniques/T1071/001/"
+        ]
+      },
+      {
+        "type": "source_code",
+        "category": "malicious_domain",
+        "severity": "critical",
+        "title": "Known malicious domain: socifiapp.com",
+        "description": "Exfiltration endpoint used in ClawHavoc campaign for stolen credentials",
+        "file": "README.md",
+        "line": 103,
+        "reason": "Domain identified in published IOC list from enterprise security advisory (Feb 2026)",
+        "references": [
+          "https://attack.mitre.org/techniques/T1071/001/"
+        ]
+      },
+      {
+        "type": "source_code",
+        "category": "malicious_domain",
+        "severity": "critical",
+        "title": "Known malicious domain: webhook.site/358866c4",
+        "description": "Specific malicious webhook instance used for credential theft",
+        "file": "README.md",
+        "line": 104,
+        "reason": "Domain identified in published IOC list from enterprise security advisory (Feb 2026)",
+        "references": [
+          "https://attack.mitre.org/techniques/T1071/001/"
+        ]
+      },
+      {
+        "type": "source_code",
+        "category": "credential_theft",
+        "severity": "critical",
+        "title": "Access to .clawdbot/.env credentials file",
+        "description": "Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.",
+        "file": "README.md",
+        "line": 105,
+        "reason": "~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory",
+        "references": [
+          "https://attack.mitre.org/techniques/T1552/001/"
+        ]
+      },
+      {
+        "type": "source_code",
+        "category": "malicious_ip",
+        "severity": "critical",
+        "title": "Known malicious IP: 91.92.242.30",
+        "description": "C2 server used in ClawHavoc campaign to host dropper payloads",
+        "file": "src\\scanners\\source_code_scanner.py",
+        "line": 51,
+        "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+        "references": [
+          "https://attack.mitre.org/techniques/T1071/001/"
+        ]
+      },
+      {
+        "type": "source_code",
+        "category": "malicious_ip",
+        "severity": "critical",
+        "title": "Known malicious IP: 91.92.242.31",
+        "description": "Adjacent C2 infrastructure in same network block as .30",
+        "file": "src\\scanners\\source_code_scanner.py",
+        "line": 53,
+        "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+        "references": [
+          "https://attack.mitre.org/techniques/T1071/001/"
+        ]
+      },
+      {
+        "type": "source_code",
+        "category": "malicious_ip",
+        "severity": "critical",
+        "title": "Known malicious IP: 54.91.154.110",
+        "description": "Reverse shell callback endpoint (AuthTool campaign, port 13338)",
+        "file": "src\\scanners\\source_code_scanner.py",
+        "line": 57,
+        "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+        "references": [
+          "https://attack.mitre.org/techniques/T1071/001/"
+        ]
+      },
+      {
+        "type": "source_code",
+        "category": "malicious_ip",
+        "severity": "critical",
+        "title": "Known malicious IP: 185.215.113.",
+        "description": "IP range frequently observed in commodity malware C2",
+        "file": "src\\scanners\\source_code_scanner.py",
+        "line": 60,
+        "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+        "references": [
+          "https://attack.mitre.org/techniques/T1071/001/"
+        ]
+      },
+      {
+        "type": "source_code",
+        "category": "malicious_ip",
+        "severity": "critical",
+        "title": "Known malicious IP: 45.155.205.",
+        "description": "IP range frequently observed in commodity malware C2",
+        "file": "src\\scanners\\source_code_scanner.py",
+        "line": 62,
+        "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+        "references": [
+          "https://attack.mitre.org/techniques/T1071/001/"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "type": "dependency",
+      "severity": "medium",
+      "title": "Known vulnerability in requests",
+      "description": "Cookie leak on redirect in requests. Affected: <2.32.0. Spec: requests>=2.31.0         # For HTTP requests (if needed)",
+      "cve": "CVE-2024-35195",
+      "package": "requests",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-35195",
+        "https://github.com/advisories/GHSA-9wx4-h78v-vm56"
+      ],
+      "file": "archive\\requirements-minimal.txt"
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_ip",
+      "severity": "critical",
+      "title": "Known malicious IP: 91.92.242.30",
+      "description": "C2 server used in ClawHavoc campaign to host dropper payloads",
+      "file": "README.md",
+      "line": 101,
+      "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_ip",
+      "severity": "critical",
+      "title": "Known malicious IP: 54.91.154.110",
+      "description": "Reverse shell callback endpoint (AuthTool campaign, port 13338)",
+      "file": "README.md",
+      "line": 102,
+      "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_domain",
+      "severity": "critical",
+      "title": "Known malicious domain: socifiapp.com",
+      "description": "Exfiltration endpoint used in ClawHavoc campaign for stolen credentials",
+      "file": "README.md",
+      "line": 103,
+      "reason": "Domain identified in published IOC list from enterprise security advisory (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_domain",
+      "severity": "critical",
+      "title": "Known malicious domain: webhook.site/358866c4",
+      "description": "Specific malicious webhook instance used for credential theft",
+      "file": "README.md",
+      "line": 104,
+      "reason": "Domain identified in published IOC list from enterprise security advisory (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_theft",
+      "severity": "critical",
+      "title": "Access to .clawdbot/.env credentials file",
+      "description": "Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.",
+      "file": "README.md",
+      "line": 105,
+      "reason": "~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory",
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: glot.io",
+      "description": "Reference to paste service glot.io - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\skill_scanner.py",
+      "line": 160,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: pastebin.com",
+      "description": "Reference to paste service pastebin.com - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\skill_scanner.py",
+      "line": 160,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: paste.ee",
+      "description": "Reference to paste service paste.ee - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\skill_scanner.py",
+      "line": 160,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_ip",
+      "severity": "critical",
+      "title": "Known malicious IP: 91.92.242.30",
+      "description": "C2 server used in ClawHavoc campaign to host dropper payloads",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 51,
+      "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_ip",
+      "severity": "critical",
+      "title": "Known malicious IP: 91.92.242.31",
+      "description": "Adjacent C2 infrastructure in same network block as .30",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 53,
+      "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_ip",
+      "severity": "critical",
+      "title": "Known malicious IP: 54.91.154.110",
+      "description": "Reverse shell callback endpoint (AuthTool campaign, port 13338)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 57,
+      "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_ip",
+      "severity": "critical",
+      "title": "Known malicious IP: 185.215.113.",
+      "description": "IP range frequently observed in commodity malware C2",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 60,
+      "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_ip",
+      "severity": "critical",
+      "title": "Known malicious IP: 45.155.205.",
+      "description": "IP range frequently observed in commodity malware C2",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 62,
+      "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_domain",
+      "severity": "critical",
+      "title": "Known malicious domain: socifiapp.com",
+      "description": "Exfiltration endpoint used in ClawHavoc campaign for stolen credentials",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 70,
+      "reason": "Domain identified in published IOC list from enterprise security advisory (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_domain",
+      "severity": "critical",
+      "title": "Known malicious domain: webhook.site/358866c4",
+      "description": "Specific malicious webhook instance used for credential theft",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 73,
+      "reason": "Domain identified in published IOC list from enterprise security advisory (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Solana credential access",
+      "description": "Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 346,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Solana credential access",
+      "description": "Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 346,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Solana credential access",
+      "description": "Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 346,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Polymarket credential access",
+      "description": "Access to Polymarket API credentials - targeted by known malicious skills (e.g. polymarket-7ceau)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 354,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Polymarket credential access",
+      "description": "Access to Polymarket API credentials - targeted by known malicious skills (e.g. polymarket-7ceau)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 354,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Phantom wallet access",
+      "description": "Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 338,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Phantom wallet access",
+      "description": "Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 360,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Phantom wallet access",
+      "description": "Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 362,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Phantom wallet access",
+      "description": "Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 362,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Phantom wallet access",
+      "description": "Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 362,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Phantom wallet access",
+      "description": "Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 363,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Phantom wallet access",
+      "description": "Access to Phantom wallet credentials - targeted by known malicious skills (e.g. phantom-0jcvy)",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 365,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_theft",
+      "severity": "critical",
+      "title": "Access to .clawdbot/.env credentials file",
+      "description": "Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 301,
+      "reason": "~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory",
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_theft",
+      "severity": "critical",
+      "title": "Access to .clawdbot/.env credentials file",
+      "description": "Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 311,
+      "reason": "~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory",
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_theft",
+      "severity": "critical",
+      "title": "Access to .clawdbot/.env credentials file",
+      "description": "Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 312,
+      "reason": "~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory",
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "obfuscation",
+      "severity": "critical",
+      "title": "Obfuscated eval() call",
+      "description": "eval() with encoding/decoding function - classic malware deobfuscation pattern",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 415,
+      "match": "eval(atob",
+      "references": [
+        "https://attack.mitre.org/techniques/T1027/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "gatekeeper_bypass",
+      "severity": "critical",
+      "title": "macOS Gatekeeper bypass (xattr clear)",
+      "description": "xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 256,
+      "reason": "Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks",
+      "references": [
+        "https://attack.mitre.org/techniques/T1553/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "gatekeeper_bypass",
+      "severity": "critical",
+      "title": "macOS Gatekeeper bypass (xattr clear)",
+      "description": "xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 263,
+      "reason": "Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks",
+      "references": [
+        "https://attack.mitre.org/techniques/T1553/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "gatekeeper_bypass",
+      "severity": "critical",
+      "title": "macOS Gatekeeper disabled system-wide",
+      "description": "spctl --master-disable turns off Gatekeeper entirely, allowing any unsigned binary to run",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 280,
+      "reason": "Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks",
+      "references": [
+        "https://attack.mitre.org/techniques/T1553/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: glot.io",
+      "description": "Reference to paste service glot.io - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 589,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: pastebin.com",
+      "description": "Reference to paste service pastebin.com - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 589,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: paste.ee",
+      "description": "Reference to paste service paste.ee - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 598,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: hastebin.com",
+      "description": "Reference to paste service hastebin.com - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 599,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: ghostbin.co",
+      "description": "Reference to paste service ghostbin.co - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 600,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: rentry.co",
+      "description": "Reference to paste service rentry.co - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 601,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: dpaste.org",
+      "description": "Reference to paste service dpaste.org - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 602,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: ix.io",
+      "description": "Reference to paste service ix.io - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 603,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: sprunge.us",
+      "description": "Reference to paste service sprunge.us - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 604,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "paste_service",
+      "severity": "medium",
+      "title": "Paste service reference: 0x0.st",
+      "description": "Reference to paste service 0x0.st - commonly used for hosting malicious payloads in skill attacks",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 605,
+      "references": [
+        "https://attack.mitre.org/techniques/T1102/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "crypto_wallet",
+      "severity": "critical",
+      "title": "Solana wallet file access",
+      "description": "Direct access to Solana wallet files - matches known malicious skill targeting pattern",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 346,
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "crypto_wallet",
+      "severity": "critical",
+      "title": "Solana wallet file access",
+      "description": "Direct access to Solana wallet files - matches known malicious skill targeting pattern",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 346,
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "crypto_wallet",
+      "severity": "critical",
+      "title": "Solana wallet file access",
+      "description": "Direct access to Solana wallet files - matches known malicious skill targeting pattern",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 636,
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "crypto_wallet",
+      "severity": "critical",
+      "title": "Solana wallet file access",
+      "description": "Direct access to Solana wallet files - matches known malicious skill targeting pattern",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 636,
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "crypto_wallet",
+      "severity": "critical",
+      "title": "Ethereum keystore access",
+      "description": "Direct access to Ethereum keystore files",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 644,
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "crypto_wallet",
+      "severity": "critical",
+      "title": "Ethereum keystore access",
+      "description": "Direct access to Ethereum keystore files",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 644,
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "crypto_wallet",
+      "severity": "critical",
+      "title": "Bitcoin wallet access",
+      "description": "Direct access to Bitcoin wallet files",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 651,
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "crypto_wallet",
+      "severity": "critical",
+      "title": "Bitcoin wallet access",
+      "description": "Direct access to Bitcoin wallet files",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 652,
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "ssrf",
+      "severity": "critical",
+      "title": "Cloud metadata endpoint access",
+      "description": "Reference to cloud instance metadata endpoint - SSRF can steal IAM credentials and secrets",
+      "file": "src\\scanners\\source_code_scanner.py",
+      "line": 683,
+      "reason": "OpenClaw patched SSRF guards for skill downloads; metadata access enables cloud account takeover",
+      "references": [
+        "https://cwe.mitre.org/data/definitions/918.html"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_ip",
+      "severity": "critical",
+      "title": "Known malicious IP: 91.92.242.30",
+      "description": "C2 server used in ClawHavoc campaign to host dropper payloads",
+      "file": "src\\utils\\report_generator.py",
+      "line": 873,
+      "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "malicious_ip",
+      "severity": "critical",
+      "title": "Known malicious IP: 54.91.154.110",
+      "description": "Reverse shell callback endpoint (AuthTool campaign, port 13338)",
+      "file": "src\\utils\\report_generator.py",
+      "line": 874,
+      "reason": "IP identified in published security research on OpenClaw exploitation campaigns (Feb 2026)",
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Solana credential access",
+      "description": "Access to Solana wallet credentials - targeted by known malicious skills (e.g. solana-9lplb)",
+      "file": "src\\utils\\report_generator.py",
+      "line": 884,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_harvesting",
+      "severity": "critical",
+      "title": "Polymarket credential access",
+      "description": "Access to Polymarket API credentials - targeted by known malicious skills (e.g. polymarket-7ceau)",
+      "file": "src\\utils\\report_generator.py",
+      "line": 884,
+      "references": [
+        "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/",
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "credential_theft",
+      "severity": "critical",
+      "title": "Access to .clawdbot/.env credentials file",
+      "description": "Direct access to ~/.clawdbot/.env which stores API keys (OpenAI, Anthropic, AWS) in plaintext. This is the primary credential exfiltration target in observed attack campaigns.",
+      "file": "src\\utils\\report_generator.py",
+      "line": 751,
+      "reason": "~/.clawdbot/.env is the #1 exfiltration target per published enterprise security advisory",
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "gatekeeper_bypass",
+      "severity": "critical",
+      "title": "macOS Gatekeeper bypass (xattr clear)",
+      "description": "xattr attribute clearing bypasses macOS Gatekeeper quarantine. This is the delivery pattern used by AMOS Stealer in malicious ClawHub skills. Detection rule: PHASR.Xattr.AttributesCleared.",
+      "file": "src\\utils\\report_generator.py",
+      "line": 776,
+      "reason": "Gatekeeper bypass is a known AMOS Stealer delivery technique observed in ClawHub attacks",
+      "references": [
+        "https://attack.mitre.org/techniques/T1553/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "crypto_wallet",
+      "severity": "critical",
+      "title": "Solana wallet file access",
+      "description": "Direct access to Solana wallet files - matches known malicious skill targeting pattern",
+      "file": "src\\utils\\report_generator.py",
+      "line": 884,
+      "references": [
+        "https://attack.mitre.org/techniques/T1552/001/"
+      ]
+    },
+    {
+      "type": "source_code",
+      "category": "dangerous_command",
+      "severity": "critical",
+      "title": "Remote code execution via pipe",
+      "description": "Download and execute pattern (curl|bash) - MITRE ATT&CK T1059.004",
+      "file": "tests\\test_report_generator.py",
+      "line": 38,
+      "match": "curl | bash",
+      "references": [
+        "https://attack.mitre.org/techniques/T1059/004/"
+      ]
+    }
+  ],
+  "skill_metadata": []
+}

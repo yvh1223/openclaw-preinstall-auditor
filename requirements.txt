@@ -1,0 +1,5 @@
+# McAfee OpenClaw Pre-Install Security Auditor
+# Install with: pip install -r requirements.txt
+
+# Terminal output formatting (colored severity indicators)
+colorama>=0.4.6
