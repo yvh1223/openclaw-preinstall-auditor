@@ -1,10 +1,10 @@
 ======================================================================
-  McAfee OpenClaw Pre-Install Security Audit Report
+  OpenClaw Pre-Install Security Audit Report
 ======================================================================
 
   Report Profile:  FULL
   Generated:       2026-02-07 22:56:38
-  Repository:      C:\claw\mcafee_openclaw_auditor
+  Repository:      C:\claw\openclaw-preinstall-auditor
   Files Scanned:   15
   Skills Analyzed: 0
   Duration:        0.39s
@@ -520,5 +520,5 @@
       - https://attack.mitre.org/techniques/T1102/
 
 ======================================================================
-  McAfee OpenClaw Pre-Install Security Auditor v1.0.0
+  OpenClaw Pre-Install Security Auditor v1.0.0
 ======================================================================

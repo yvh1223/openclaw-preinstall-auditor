@@ -102,7 +102,7 @@ class ReportGenerator:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>McAfee OpenClaw Security Audit Report</title>
+    <title>OpenClaw Security Audit Report</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -112,7 +112,7 @@ class ReportGenerator:
         .header h1 {{ color: #58a6ff; font-size: 28px; margin-bottom: 8px; }}
         .header .subtitle {{ color: #8b949e; font-size: 14px; }}
         .header .report-profile {{ color: #79c0ff; font-size: 12px; margin-top: 6px; letter-spacing: 0.4px; text-transform: uppercase; }}
-        .mcafee-logo {{ color: #e63946; font-weight: bold; font-size: 16px; margin-bottom: 12px; }}
+        .security-logo {{ color: #e63946; font-weight: bold; font-size: 16px; margin-bottom: 12px; }}
 
         .risk-card {{ background: linear-gradient(135deg, #161b22, #21262d); border: 2px solid {level_color}; border-radius: 12px; padding: 30px; margin-bottom: 24px; text-align: center; }}
         .risk-score {{ font-size: 72px; font-weight: bold; color: {level_color}; }}
@@ -230,7 +230,7 @@ class ReportGenerator:
 <body>
     <div class="container">
         <div class="header">
-            <div class="mcafee-logo">McAFEE SECURITY</div>
+            <div class="security-logo">SECURITY AUDIT</div>
             <h1>OpenClaw Pre-Install Security Audit</h1>
             <div class="subtitle">
                 Generated: {datetime.now().strftime('%B %d, %Y at %H:%M')} |
@@ -342,9 +342,9 @@ class ReportGenerator:
         </div>
 
         <div class="footer">
-            McAfee OpenClaw Pre-Install Security Auditor v1.0.0 |
+            OpenClaw Pre-Install Security Auditor v1.0.0 |
             Proof of Concept - For demonstration purposes |
-            &copy; {datetime.now().year} McAfee Security
+            &copy; {datetime.now().year} OpenClaw Security
         </div>
     </div>
 
@@ -986,7 +986,7 @@ class ReportGenerator:
 
         lines = [
             "=" * 70,
-            "  McAfee OpenClaw Pre-Install Security Audit Report",
+            "  OpenClaw Pre-Install Security Audit Report",
             "=" * 70,
             "",
             f"  Report Profile:  {'CONCISE' if is_concise else 'FULL'}",
@@ -1072,7 +1072,7 @@ class ReportGenerator:
 
         lines.extend([
             "=" * 70,
-            "  McAfee OpenClaw Pre-Install Security Auditor v1.0.0",
+            "  OpenClaw Pre-Install Security Auditor v1.0.0",
             "=" * 70,
         ])
 

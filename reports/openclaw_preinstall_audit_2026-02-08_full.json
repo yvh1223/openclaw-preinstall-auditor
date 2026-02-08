@@ -3,7 +3,7 @@
     "scan_date": "2026-02-07T22:56:38.260003",
     "scanner_version": "1.0.0",
     "report_profile": "full",
-    "repo_path": "C:\\claw\\mcafee_openclaw_auditor",
+    "repo_path": "C:\\claw\\openclaw-preinstall-auditor",
     "files_scanned": 15,
     "skills_scanned": 0,
     "scan_duration_seconds": 0.39

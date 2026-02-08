@@ -1,5 +1,5 @@
 ======================================================================
-  McAfee OpenClaw Pre-Install Security Audit Report
+  OpenClaw Pre-Install Security Audit Report
 ======================================================================
 
   Generated:       2026-02-07 22:37:33
@@ -423,5 +423,5 @@
     8 dependency overrides found. Overrides often indicate patched vulnerabilities or forced version pinning for security reasons.
 
 ======================================================================
-  McAfee OpenClaw Pre-Install Security Auditor v1.0.0
+  OpenClaw Pre-Install Security Auditor v1.0.0
 ======================================================================

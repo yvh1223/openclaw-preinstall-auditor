@@ -1,4 +1,4 @@
-﻿# McAfee OpenClaw Pre-Install Security Auditor
+﻿# OpenClaw Pre-Install Security Auditor
 
 **Static security analysis for the OpenClaw AI agent framework before installation.**
 
@@ -36,8 +36,8 @@ Norton and VirusTotal provide only shallow URL/hash scanning. This tool performs
 
 ```bash
 # 1. Clone this repo
-git clone <repo-url> mcafee_openclaw_auditor
-cd mcafee_openclaw_auditor
+git clone <repo-url> openclaw-preinstall-auditor
+cd openclaw-preinstall-auditor
 
 # 2. Install dependencies (only colorama required)
 pip install -r requirements.txt
@@ -61,7 +61,7 @@ Reports are saved to the `reports/` directory with timestamps.
 ## Project Structure
 
 ```
-mcafee_openclaw_auditor/
+openclaw-preinstall-auditor/
 |-- scripts/
 |   `-- scan_and_report.py             # Main entry point (4-phase scanner)
 |-- src/
@@ -124,4 +124,6 @@ All findings are scored using a weighted system (Critical=40, High=20, Medium=10
 
 ## License
 
-McAfee Internal - Proof of Concept
+## Licensing
+
+Open source security tool for pre-installation analysis

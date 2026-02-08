@@ -1,1 +1,1 @@
-# McAfee OpenClaw Pre-Install Security Auditor
+# OpenClaw Pre-Install Security Auditor
