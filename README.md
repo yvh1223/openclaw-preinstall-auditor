@@ -58,6 +58,17 @@ The scanner generates three report formats:
 
 Reports are saved to the `reports/` directory with timestamps.
 
+### View HTML Reports in Browser (Rendered)
+
+GitHub `blob` links (for example, `.../blob/main/reports/report.html`) show source code by design.
+To open the same file as a rendered webpage, use `raw.githack`:
+
+`https://raw.githack.com/<owner>/<repo>/<branch>/reports/<report-file>.html`
+
+Current examples:
+- Full report: [Rendered HTML](https://raw.githack.com/yvh1223/openclaw-preinstall-auditor/main/reports/openclaw_preinstall_audit_2026-02-08_full.html)
+- Concise report: [Rendered HTML](https://raw.githack.com/yvh1223/openclaw-preinstall-auditor/main/reports/openclaw_preinstall_audit_2026-02-08_concise.html)
+
 ## Project Structure
 
 ```
