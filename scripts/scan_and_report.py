@@ -23,7 +23,7 @@ try:
     init(autoreset=True)
 except ImportError:
     class Fore:
-        RED = GREEN = YELLOW = CYAN = WHITE = RESET = ""
+        RED = GREEN = YELLOW = CYAN = WHITE = RESET = LIGHTRED_EX = ""
     class Style:
         BRIGHT = RESET_ALL = ""
 
@@ -36,12 +36,22 @@ from src.utils.report_generator import ReportGenerator
 
 
 def print_banner():
-    print(f"{Fore.CYAN}{Style.BRIGHT}")
-    print("=" * 65)
-    print("   McAfee OpenClaw Pre-Install Security Auditor")
-    print("   Version 1.0.0 - Real Scanner Engine")
-    print("=" * 65)
-    print(f"{Style.RESET_ALL}")
+    X = Style.RESET_ALL
+    wordmark_lines = [
+        ("  __  __   ____    _    ", "_____  _____  _____"),
+        (" |  \\/  | / ___|  / \\  ", "|  ___|| ____|| ____|"),
+        (" | |\\/| || |     / _ \\ ", "| |_   |  _|  |  _|"),
+        (" | |  | || |___ / ___ \\", "|  _|  | |___ | |___"),
+        (" |_|  |_| \\____/_/   \\_\\", "|_|    |_____||_____|"),
+    ]
+
+    for left, right in wordmark_lines:
+        print(f"  {Fore.RED}{Style.BRIGHT}{left.ljust(24)}{Fore.LIGHTRED_EX}{right}{X}")
+    print()
+    print(f"{Fore.RED}{Style.BRIGHT}  McAfee{Fore.CYAN} OpenClaw Pre-Install Security Auditor{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}  Version 1.0.0 - Real Scanner Engine{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}  {'-' * 50}{Style.RESET_ALL}")
+    print()
 
 
 def run_scan(
@@ -233,3 +243,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

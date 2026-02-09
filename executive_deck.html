@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>McAfee OpenClaw Pre-Install Auditor - Executive Presentation</title>
+<style>
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --mcafee-red: #C8102E;
+        --mcafee-dark-red: #9B0024;
+        --mcafee-black: #0D0D0D;
+        --bg-dark: #0a0a0f;
+        --bg-card: #12121a;
+        --bg-card-alt: #1a1a2e;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0b8;
+        --text-muted: #6b6b80;
+        --accent-green: #00d97e;
+        --accent-yellow: #ffc107;
+        --accent-orange: #fd7e14;
+        --accent-cyan: #17a2b8;
+        --accent-purple: #8b5cf6;
+        --gradient-red: linear-gradient(135deg, #C8102E 0%, #ff3366 100%);
+        --gradient-dark: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 100%);
+    }
+
+    html, body {
+        height: 100%;
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+        background: var(--bg-dark);
+        color: var(--text-primary);
+        overflow: hidden;
+    }
+
+    /* ─── Slide Container ─── */
+    .slides-container {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+    }
+
+    .slide {
+        width: 100%;
+        height: 100%;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 60px 80px;
+        position: absolute;
+        top: 0; left: 0;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .slide.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    /* ─── Navigation ─── */
+    .nav-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background: rgba(10, 10, 15, 0.95);
+        border-top: 1px solid rgba(200, 16, 46, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 30px;
+        z-index: 100;
+        backdrop-filter: blur(10px);
+    }
+
+    .nav-bar .slide-counter {
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .nav-bar .nav-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-btn {
+        background: rgba(200, 16, 46, 0.2);
+        border: 1px solid rgba(200, 16, 46, 0.4);
+        color: var(--text-primary);
+        padding: 6px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+        background: var(--mcafee-red);
+        border-color: var(--mcafee-red);
+    }
+
+    .progress-bar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: rgba(200, 16, 46, 0.15);
+        z-index: 100;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--gradient-red);
+        transition: width 0.4s ease;
+        border-radius: 0 2px 2px 0;
+    }
+
+    /* ─── Slide Styles ─── */
+    .slide-title {
+        font-size: 48px;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 16px;
+        letter-spacing: -1px;
+    }
+
+    .slide-subtitle {
+        font-size: 22px;
+        color: var(--text-secondary);
+        font-weight: 400;
+        margin-bottom: 40px;
+    }
+
+    .red-text { color: var(--mcafee-red); }
+    .green-text { color: var(--accent-green); }
+    .yellow-text { color: var(--accent-yellow); }
+    .cyan-text { color: var(--accent-cyan); }
+    .purple-text { color: var(--accent-purple); }
+
+    .highlight-box {
+        background: rgba(200, 16, 46, 0.08);
+        border: 1px solid rgba(200, 16, 46, 0.25);
+        border-left: 4px solid var(--mcafee-red);
+        padding: 20px 28px;
+        border-radius: 8px;
+        margin: 12px 0;
+        font-size: 18px;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 24px;
+        width: 100%;
+        max-width: 1000px;
+    }
+
+    .stat-card {
+        background: var(--bg-card);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 28px;
+        text-align: center;
+        transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(200, 16, 46, 0.4);
+    }
+
+    .stat-number {
+        font-size: 52px;
+        font-weight: 900;
+        background: var(--gradient-red);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+
+    .stat-number.green {
+        background: linear-gradient(135deg, #00d97e, #20c997);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+
+    .stat-label {
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+    }
+
+    /* Two column layout */
+    .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        width: 100%;
+        max-width: 1100px;
+        align-items: start;
+    }
+
+    .col-content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .col-content h3 {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    /* Bullet list */
+    .bullet-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .bullet-list li {
+        padding: 10px 0;
+        font-size: 18px;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        line-height: 1.5;
+    }
+
+    .bullet-list li::before {
+        content: '\25B8';
+        color: var(--mcafee-red);
+        font-weight: bold;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .bullet-list li.green::before { color: var(--accent-green); content: '\2713'; }
+    .bullet-list li.red::before { color: var(--mcafee-red); content: '\2717'; }
+    .bullet-list li.yellow::before { color: var(--accent-yellow); content: '\26A0'; }
+
+    /* Comparison table */
+    .comparison-table {
+        width: 100%;
+        max-width: 900px;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 16px;
+    }
+
+    .comparison-table th {
+        background: rgba(200, 16, 46, 0.15);
+        color: var(--text-primary);
+        padding: 14px 20px;
+        text-align: left;
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .comparison-table th:first-child { border-radius: 8px 0 0 0; }
+    .comparison-table th:last-child {
+        border-radius: 0 8px 0 0;
+        background: var(--mcafee-red);
+    }
+
+    .comparison-table td {
+        padding: 14px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        color: var(--text-secondary);
+    }
+
+    .comparison-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    .comparison-table td:last-child {
+        color: var(--accent-green);
+        font-weight: 700;
+        background: rgba(0, 217, 126, 0.04);
+    }
+
+    .check { color: var(--accent-green); font-weight: bold; }
+    .cross { color: var(--mcafee-red); font-weight: bold; }
+    .partial { color: var(--accent-yellow); font-weight: bold; }
+
+    /* Terminal mockup */
+    .terminal {
+        background: #0c0c14;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        width: 100%;
+        max-width: 800px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .terminal-header {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 10px 16px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .terminal-dot {
+        width: 12px; height: 12px;
+        border-radius: 50%;
+    }
+
+    .terminal-dot.red { background: #ff5f56; }
+    .terminal-dot.yellow { background: #ffbd2e; }
+    .terminal-dot.green { background: #27c93f; }
+
+    .terminal-title {
+        flex: 1;
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .terminal-body {
+        padding: 20px 24px;
+        font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        font-size: 13px;
+        line-height: 1.7;
+        max-height: 440px;
+        overflow-y: auto;
+    }
+
+    .terminal-body .cmd { color: #27c93f; }
+    .terminal-body .warn { color: #ffbd2e; }
+    .terminal-body .err { color: #ff5f56; }
+    .terminal-body .info { color: #17a2b8; }
+    .terminal-body .dim { color: #555; }
+    .terminal-body .bold { font-weight: bold; color: #fff; }
+    .terminal-body .red-bg { background: rgba(200, 16, 46, 0.3); padding: 2px 6px; border-radius: 3px; }
+
+    /* Risk meter */
+    .risk-bar-container {
+        width: 100%;
+        height: 20px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .risk-bar-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 1s ease;
+    }
+
+    /* Timeline / Flow */
+    .flow-diagram {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: 1000px;
+    }
+
+    .flow-step {
+        background: var(--bg-card);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 16px 20px;
+        text-align: center;
+        min-width: 140px;
+    }
+
+    .flow-step.active-step {
+        border-color: var(--mcafee-red);
+        background: rgba(200, 16, 46, 0.1);
+    }
+
+    .flow-arrow { font-size: 24px; color: var(--text-muted); }
+    .flow-step-icon { font-size: 28px; margin-bottom: 8px; }
+    .flow-step-label { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+
+    /* Threat card */
+    .threat-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+        width: 100%;
+        max-width: 1000px;
+    }
+
+    .threat-card {
+        background: var(--bg-card);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-left: 4px solid var(--mcafee-red);
+        border-radius: 8px;
+        padding: 20px 24px;
+    }
+
+    .threat-card.critical { border-left-color: #ff5f56; }
+    .threat-card.high { border-left-color: #fd7e14; }
+
+    .threat-card-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .threat-card-body { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+
+    .threat-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .threat-badge.critical { background: rgba(255, 95, 86, 0.2); color: #ff5f56; }
+    .threat-badge.high { background: rgba(253, 126, 20, 0.2); color: #fd7e14; }
+
+    /* Big quote */
+    .big-quote {
+        font-size: 32px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--text-secondary);
+        max-width: 800px;
+        text-align: center;
+        line-height: 1.5;
+        position: relative;
+        padding: 0 40px;
+    }
+
+    .big-quote::before {
+        content: '\201C';
+        font-size: 80px;
+        color: var(--mcafee-red);
+        position: absolute;
+        top: -30px;
+        left: -10px;
+        font-style: normal;
+        opacity: 0.6;
+    }
+
+    /* CTA box */
+    .cta-box {
+        background: var(--gradient-red);
+        border-radius: 16px;
+        padding: 40px 60px;
+        text-align: center;
+        max-width: 700px;
+    }
+
+    .cta-box h2 { font-size: 32px; font-weight: 800; margin-bottom: 12px; }
+    .cta-box p { font-size: 18px; opacity: 0.9; margin-bottom: 24px; }
+
+    /* Confidential badge */
+    .confidential {
+        position: fixed;
+        top: 16px;
+        right: 24px;
+        background: rgba(200, 16, 46, 0.15);
+        border: 1px solid rgba(200, 16, 46, 0.3);
+        color: var(--mcafee-red);
+        padding: 4px 14px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        z-index: 100;
+    }
+
+    /* McAfee logo top-left */
+    .mcafee-badge {
+        position: fixed;
+        top: 16px;
+        left: 24px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 100;
+    }
+
+    .mcafee-badge-shield { width: 28px; height: 32px; }
+    .mcafee-logo-ref {
+        display: block;
+        object-fit: contain;
+    }
+    .mcafee-badge-text { font-size: 16px; font-weight: 800; color: var(--mcafee-red); letter-spacing: 0.5px; }
+
+    .key-hint { color: var(--text-muted); font-size: 12px; }
+    .key-hint kbd {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 11px;
+    }
+
+    .section-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        color: var(--mcafee-red);
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    /* Slide-specific backgrounds */
+    .slide-cover { background: radial-gradient(ellipse at 30% 50%, rgba(200, 16, 46, 0.08) 0%, transparent 70%); }
+    .slide-problem { background: radial-gradient(ellipse at 70% 50%, rgba(255, 95, 86, 0.06) 0%, transparent 60%); }
+    .slide-solution { background: radial-gradient(ellipse at 50% 80%, rgba(0, 217, 126, 0.05) 0%, transparent 60%); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       ANIMATED SHIELD & SCANNING EFFECTS
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* ─── Pulsing shield glow on cover ─── */
+    .shield-animated {
+        position: relative;
+        display: inline-block;
+    }
+
+    .shield-animated .shield-glow {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 200px; height: 200px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(200,16,46,0.35) 0%, transparent 70%);
+        animation: shieldPulse 2.5s ease-in-out infinite;
+        z-index: 0;
+    }
+
+    .shield-animated svg { position: relative; z-index: 1; }
+
+    @keyframes shieldPulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+        50% { transform: translate(-50%, -50%) scale(1.35); opacity: 1; }
+    }
+
+    /* ─── Orbiting ring around shield ─── */
+    .shield-ring {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 180px; height: 180px;
+        transform: translate(-50%, -50%);
+        border: 2px solid transparent;
+        border-top: 2px solid rgba(200,16,46,0.7);
+        border-right: 2px solid rgba(200,16,46,0.3);
+        border-radius: 50%;
+        animation: shieldOrbit 3s linear infinite;
+        z-index: 2;
+    }
+
+    .shield-ring-2 {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 220px; height: 220px;
+        transform: translate(-50%, -50%);
+        border: 1px solid transparent;
+        border-bottom: 1px solid rgba(200,16,46,0.4);
+        border-left: 1px solid rgba(200,16,46,0.15);
+        border-radius: 50%;
+        animation: shieldOrbit 5s linear infinite reverse;
+        z-index: 2;
+    }
+
+    @keyframes shieldOrbit {
+        from { transform: translate(-50%, -50%) rotate(0deg); }
+        to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* ─── Floating particles around shield ─── */
+    .shield-particles {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 280px; height: 280px;
+        transform: translate(-50%, -50%);
+        z-index: 0;
+    }
+
+    .particle {
+        position: absolute;
+        width: 4px; height: 4px;
+        background: var(--mcafee-red);
+        border-radius: 50%;
+        opacity: 0;
+        animation: particleFloat 4s ease-in-out infinite;
+    }
+
+    .particle:nth-child(1) { top: 10%; left: 50%; animation-delay: 0s; }
+    .particle:nth-child(2) { top: 30%; left: 90%; animation-delay: 0.5s; }
+    .particle:nth-child(3) { top: 70%; left: 85%; animation-delay: 1s; }
+    .particle:nth-child(4) { top: 90%; left: 50%; animation-delay: 1.5s; }
+    .particle:nth-child(5) { top: 70%; left: 15%; animation-delay: 2s; }
+    .particle:nth-child(6) { top: 30%; left: 10%; animation-delay: 2.5s; }
+    .particle:nth-child(7) { top: 5%; left: 30%; animation-delay: 0.8s; }
+    .particle:nth-child(8) { top: 50%; left: 95%; animation-delay: 1.8s; }
+
+    @keyframes particleFloat {
+        0%, 100% { opacity: 0; transform: scale(0.5) translateY(0); }
+        30% { opacity: 1; transform: scale(1) translateY(-8px); }
+        70% { opacity: 0.8; transform: scale(0.8) translateY(4px); }
+    }
+
+    /* ─── Radar sweep on shield ─── */
+    .shield-radar {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 160px; height: 160px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        overflow: hidden;
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    .shield-radar::after {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 50%; height: 50%;
+        transform-origin: 0% 0%;
+        background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            rgba(200,16,46,0.4) 30deg,
+            transparent 60deg
+        );
+        animation: radarSweep 3s linear infinite;
+    }
+
+    @keyframes radarSweep {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCANNING SLIDE - Full animated experience
+       ═══════════════════════════════════════════════════════════════ */
+
+    .scan-slide-layout {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 50px;
+        width: 100%;
+        max-width: 1100px;
+        align-items: center;
+    }
+
+    /* ─── Large animated shield for scanning slide ─── */
+    .scan-shield-container {
+        position: relative;
+        width: 320px;
+        height: 360px;
+        margin: 0 auto;
+    }
+
+    .scan-shield-bg-pulse {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 300px; height: 300px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(200,16,46,0.2) 0%, transparent 70%);
+        animation: scanPulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes scanPulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.4; }
+        50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.9; }
+    }
+
+    .scan-shield-svg {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -55%);
+        z-index: 5;
+        filter: drop-shadow(0 0 20px rgba(200,16,46,0.5));
+    }
+
+    /* Scan line sweeping vertically over shield */
+    .scan-line-v {
+        position: absolute;
+        top: 0; left: 50%;
+        width: 280px;
+        height: 4px;
+        transform: translateX(-50%);
+        background: linear-gradient(90deg, transparent, rgba(200,16,46,0.8), rgba(255,255,255,0.9), rgba(200,16,46,0.8), transparent);
+        z-index: 10;
+        animation: scanLineV 2.2s ease-in-out infinite;
+        box-shadow: 0 0 15px rgba(200,16,46,0.6), 0 0 30px rgba(200,16,46,0.3);
+        border-radius: 2px;
+    }
+
+    @keyframes scanLineV {
+        0% { top: 5%; opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { top: 90%; opacity: 0; }
+    }
+
+    /* Concentric scan rings expanding */
+    .scan-ring {
+        position: absolute;
+        top: 50%; left: 50%;
+        border: 2px solid rgba(200,16,46,0.5);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        animation: scanRingExpand 3s ease-out infinite;
+        z-index: 4;
+    }
+
+    .scan-ring:nth-child(1) { width: 100px; height: 100px; animation-delay: 0s; }
+    .scan-ring:nth-child(2) { width: 100px; height: 100px; animation-delay: 1s; }
+    .scan-ring:nth-child(3) { width: 100px; height: 100px; animation-delay: 2s; }
+
+    @keyframes scanRingExpand {
+        0% { transform: translate(-50%, -50%) scale(0); opacity: 0.8; border-color: rgba(200,16,46,0.6); }
+        100% { transform: translate(-50%, -50%) scale(4); opacity: 0; border-color: rgba(200,16,46,0); }
+    }
+
+    /* Status text below shield */
+    .scan-status-text {
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--mcafee-red);
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        white-space: nowrap;
+        z-index: 10;
+    }
+
+    .scan-status-text .scan-dots::after {
+        content: '';
+        animation: scanDots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes scanDots {
+        0% { content: ''; }
+        25% { content: '.'; }
+        50% { content: '..'; }
+        75% { content: '...'; }
+    }
+
+    /* ─── Animated terminal on scanning slide ─── */
+    .scan-terminal {
+        background: #080810;
+        border-radius: 12px;
+        border: 1px solid rgba(200,16,46,0.2);
+        overflow: hidden;
+        box-shadow: 0 25px 80px rgba(0,0,0,0.6), 0 0 40px rgba(200,16,46,0.08);
+    }
+
+    .scan-terminal .terminal-header {
+        background: rgba(200,16,46,0.08);
+        border-bottom: 1px solid rgba(200,16,46,0.15);
+    }
+
+    .scan-terminal-body {
+        padding: 20px 24px;
+        font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        font-size: 12.5px;
+        line-height: 1.8;
+        min-height: 380px;
+    }
+
+    /* Typewriter lines that appear one by one */
+    .type-line {
+        opacity: 0;
+        animation: typeAppear 0.3s ease forwards;
+        white-space: pre;
+    }
+
+    .slide.active .type-line:nth-child(1) { animation-delay: 0.3s; }
+    .slide.active .type-line:nth-child(2) { animation-delay: 0.8s; }
+    .slide.active .type-line:nth-child(3) { animation-delay: 1.2s; }
+    .slide.active .type-line:nth-child(4) { animation-delay: 1.6s; }
+    .slide.active .type-line:nth-child(5) { animation-delay: 2.4s; }
+    .slide.active .type-line:nth-child(6) { animation-delay: 2.8s; }
+    .slide.active .type-line:nth-child(7) { animation-delay: 3.3s; }
+    .slide.active .type-line:nth-child(8) { animation-delay: 3.7s; }
+    .slide.active .type-line:nth-child(9) { animation-delay: 4.1s; }
+    .slide.active .type-line:nth-child(10) { animation-delay: 4.5s; }
+    .slide.active .type-line:nth-child(11) { animation-delay: 5.0s; }
+    .slide.active .type-line:nth-child(12) { animation-delay: 5.4s; }
+    .slide.active .type-line:nth-child(13) { animation-delay: 5.8s; }
+    .slide.active .type-line:nth-child(14) { animation-delay: 6.2s; }
+    .slide.active .type-line:nth-child(15) { animation-delay: 6.6s; }
+    .slide.active .type-line:nth-child(16) { animation-delay: 7.0s; }
+    .slide.active .type-line:nth-child(17) { animation-delay: 7.3s; }
+    .slide.active .type-line:nth-child(18) { animation-delay: 7.6s; }
+    .slide.active .type-line:nth-child(19) { animation-delay: 7.9s; }
+    .slide.active .type-line:nth-child(20) { animation-delay: 8.2s; }
+    .slide.active .type-line:nth-child(21) { animation-delay: 8.5s; }
+    .slide.active .type-line:nth-child(22) { animation-delay: 8.8s; }
+    .slide.active .type-line:nth-child(23) { animation-delay: 9.0s; }
+    .slide.active .type-line:nth-child(24) { animation-delay: 9.2s; }
+    .slide.active .type-line:nth-child(25) { animation-delay: 9.4s; }
+    .slide.active .type-line:nth-child(26) { animation-delay: 9.6s; }
+    .slide.active .type-line:nth-child(27) { animation-delay: 9.8s; }
+    .slide.active .type-line:nth-child(28) { animation-delay: 10.0s; }
+    .slide.active .type-line:nth-child(29) { animation-delay: 10.2s; }
+    .slide.active .type-line:nth-child(30) { animation-delay: 10.4s; }
+    .slide.active .type-line:nth-child(31) { animation-delay: 10.6s; }
+    .slide.active .type-line:nth-child(32) { animation-delay: 10.8s; }
+    .slide.active .type-line:nth-child(33) { animation-delay: 11.0s; }
+    .slide.active .type-line:nth-child(34) { animation-delay: 11.2s; }
+    .slide.active .type-line:nth-child(35) { animation-delay: 11.4s; }
+    .slide.active .type-line:nth-child(36) { animation-delay: 11.6s; }
+    .slide.active .type-line:nth-child(37) { animation-delay: 11.8s; }
+    .slide.active .type-line:nth-child(38) { animation-delay: 12.0s; }
+
+    @keyframes typeAppear {
+        from { opacity: 0; transform: translateX(-4px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Blinking cursor */
+    .blink-cursor::after {
+        content: '\2588';
+        animation: cursorBlink 1s step-end infinite;
+        color: var(--mcafee-red);
+    }
+
+    @keyframes cursorBlink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+    }
+
+    /* Animated progress bar inside terminal */
+    .term-progress {
+        display: inline-block;
+        width: 200px;
+        height: 10px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 5px;
+        overflow: hidden;
+        vertical-align: middle;
+        position: relative;
+    }
+
+    .term-progress-fill {
+        height: 100%;
+        border-radius: 5px;
+        animation: termProgressFill 2s ease-out forwards;
+        width: 0;
+    }
+
+    .term-progress-fill.red { background: linear-gradient(90deg, #ffc107, #ff5f56, #C8102E); }
+    .term-progress-fill.green { background: linear-gradient(90deg, #00d97e, #20c997); }
+    .term-progress-fill.cyan { background: var(--accent-cyan); }
+
+    .slide.active .term-progress-fill { animation-play-state: running; }
+
+    @keyframes termProgressFill {
+        from { width: 0; }
+        to { width: 100%; }
+    }
+
+    /* ASCII shield color classes */
+    .ascii-red { color: #C8102E; font-weight: bold; }
+    .ascii-white { color: #ffffff; }
+
+    /* ─── Standard animations ─── */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide.active > * {
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .slide.active > *:nth-child(2) { animation-delay: 0.1s; }
+    .slide.active > *:nth-child(3) { animation-delay: 0.2s; }
+    .slide.active > *:nth-child(4) { animation-delay: 0.3s; }
+    .slide.active > *:nth-child(5) { animation-delay: 0.4s; }
+
+    /* Override for scanning slide - don't fight with type-line anims */
+    .slide-scanning.active > * {
+        animation: none;
+        opacity: 1;
+    }
+
+    /* ─── Scanning ASCII art in terminal ─── */
+    .ascii-shield-block {
+        line-height: 1.15;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
+
+    /* ─── Warning flash on threat detection ─── */
+    .flash-red {
+        animation: flashRed 0.8s ease 6.5s 3;
+    }
+
+    @keyframes flashRed {
+        0%, 100% { background: #080810; }
+        50% { background: rgba(200,16,46,0.08); }
+    }
+
+    /* ─── Cover slide animated shield container ─── */
+    .cover-shield {
+        position: relative;
+        width: 200px;
+        height: 220px;
+        margin-bottom: 20px;
+    }
+
+    .cover-shield .mcafee-logo-ref {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -52%);
+        z-index: 5;
+        filter: drop-shadow(0 0 30px rgba(200,16,46,0.4));
+    }
+
+    /* ─── CTA slide animated shield ─── */
+    .cta-shield {
+        position: relative;
+        width: 160px;
+        height: 180px;
+        margin-bottom: 16px;
+    }
+
+    .cta-shield .mcafee-logo-ref {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -52%);
+        z-index: 5;
+    }
+
+    .cta-shield .shield-glow {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 160px; height: 160px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0,217,126,0.25) 0%, transparent 70%);
+        animation: ctaGlow 2s ease-in-out infinite;
+        z-index: 0;
+    }
+
+    @keyframes ctaGlow {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+        50% { transform: translate(-50%, -50%) scale(1.4); opacity: 1; }
+    }
+
+    .cta-shield .shield-ring {
+        width: 150px; height: 150px;
+        border-top-color: rgba(0,217,126,0.6);
+        border-right-color: rgba(0,217,126,0.2);
+    }
+</style>
+</head>
+<body>
+
+<!-- Fixed elements -->
+<div class="mcafee-badge">
+    <img class="mcafee-badge-shield mcafee-logo-ref" src="../image.png" alt="McAfee logo">
+    <span class="mcafee-badge-text">McAfee</span>
+</div>
+
+<div class="confidential">CONFIDENTIAL</div>
+
+<div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="slides-container" id="slidesContainer">
+
+<!-- ─── SLIDE 1: Cover with animated shield ─── -->
+<div class="slide slide-cover active" data-slide="1">
+    <div class="cover-shield">
+        <div class="shield-glow"></div>
+        <div class="shield-ring"></div>
+        <div class="shield-ring-2"></div>
+        <div class="shield-particles">
+            <div class="particle"></div><div class="particle"></div>
+            <div class="particle"></div><div class="particle"></div>
+            <div class="particle"></div><div class="particle"></div>
+            <div class="particle"></div><div class="particle"></div>
+        </div>
+        <div class="shield-radar"></div>
+        <img class="mcafee-logo-ref" src="../image.png" alt="McAfee logo" style="width:130px; height:156px;">
+    </div>
+    <div class="slide-title">OpenClaw Pre-Install<br><span class="red-text">Security Auditor</span></div>
+    <div class="slide-subtitle">Protecting Users Before They Install AI Agent Frameworks</div>
+    <div style="margin-top: 20px; display: flex; gap: 24px; align-items: center; justify-content: center;">
+        <a href="https://github.com/yvh1223/openclaw-preinstall-auditor" target="_blank" style="color: var(--text-muted); font-size: 13px; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); padding: 6px 16px; border-radius: 6px; transition: all 0.2s;">&#x1F517; GitHub Repository</a>
+        <a href="https://raw.githack.com/yvh1223/openclaw-preinstall-auditor/main/reports/openclaw_preinstall_audit_2026-02-08_full.html" target="_blank" style="color: var(--text-muted); font-size: 13px; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); padding: 6px 16px; border-radius: 6px; transition: all 0.2s;">&#x1F4CA; Full Audit Report</a>
+    </div>
+    <div style="margin-top: 12px; color: var(--text-muted); font-size: 14px;">
+        McAfee Advanced Threat Research &nbsp;|&nbsp; February 2026
+    </div>
+</div>
+
+<!-- ─── SLIDE 2: The Problem ─── -->
+<div class="slide slide-problem" data-slide="2">
+    <div class="section-label">The Problem</div>
+    <div class="slide-title" style="font-size: 42px;">AI Agents Are the New<br><span class="red-text">Attack Surface</span></div>
+    <div style="margin-top: 32px;">
+        <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="stat-card">
+                <div class="stat-number">972</div>
+                <div class="stat-label">Malicious Skills<br>on ClawHub</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">17%</div>
+                <div class="stat-label">of all skills<br>are compromised</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">1-Click</div>
+                <div class="stat-label">Remote Code<br>Execution</div>
+            </div>
+        </div>
+    </div>
+    <div style="margin-top: 24px; color: var(--text-muted); font-size: 14px;">
+        Source: Published security research, February 2026 - OpenClaw threat landscape analysis
+    </div>
+</div>
+
+<!-- ─── SLIDE 3: What's at Stake ─── -->
+<div class="slide" data-slide="3">
+    <div class="section-label">Threat Landscape</div>
+    <div class="slide-title" style="font-size: 38px;">What Attackers Are Stealing</div>
+    <div style="margin-top: 32px;">
+        <div class="threat-cards">
+            <div class="threat-card critical">
+                <div class="threat-badge critical">Critical</div>
+                <div class="threat-card-title">Crypto Wallet Theft</div>
+                <div class="threat-card-body">Solana keypairs, Phantom wallets, Ethereum keystores exfiltrated via malicious skills and base64-encoded payloads</div>
+            </div>
+            <div class="threat-card critical">
+                <div class="threat-badge critical">Critical</div>
+                <div class="threat-card-title">API Key Harvesting</div>
+                <div class="threat-card-body">Polymarket API keys, AWS credentials, and .env files silently copied to attacker infrastructure</div>
+            </div>
+            <div class="threat-card high">
+                <div class="threat-badge high">High</div>
+                <div class="threat-card-title">Remote Code Execution</div>
+                <div class="threat-card-body">CVE-2026-25253: Token exfiltration via gatewayUrl allows full system compromise with 1 click</div>
+            </div>
+            <div class="threat-card high">
+                <div class="threat-badge high">High</div>
+                <div class="threat-card-title">Supply Chain Compromise</div>
+                <div class="threat-card-body">Postinstall scripts, npm lifecycle hooks, and obfuscated payloads execute during package installation</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── SLIDE 4: Current Gap ─── -->
+<div class="slide" data-slide="4">
+    <div class="section-label">Market Gap</div>
+    <div class="slide-title" style="font-size: 38px;">Nobody Scans <span class="red-text">Before</span> Install</div>
+    <div class="slide-subtitle">Users are completely unprotected at the most critical moment</div>
+    <div class="flow-diagram">
+        <div class="flow-step">
+            <div class="flow-step-icon">&#x1F50D;</div>
+            <div class="flow-step-label">User Finds<br>Package</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step active-step" style="border-color: #ff5f56;">
+            <div class="flow-step-icon">&#x26A0;&#xFE0F;</div>
+            <div class="flow-step-label" style="color: #ff5f56;">NO SCAN<br>HAPPENS</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+            <div class="flow-step-icon">&#x1F4E6;</div>
+            <div class="flow-step-label">npm/brew/pip<br>Install</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="border-color: #ff5f56; background: rgba(255, 95, 86, 0.08);">
+            <div class="flow-step-icon">&#x1F480;</div>
+            <div class="flow-step-label" style="color: #ff5f56;">Malware<br>Executes</div>
+        </div>
+    </div>
+    <div class="highlight-box" style="margin-top: 32px; max-width: 700px; text-align: center;">
+        Existing tools (Norton, VirusTotal) only scan <strong>after</strong> installation.<br>
+        <span class="red-text" style="font-weight: 700;">By then, postinstall scripts have already run.</span>
+    </div>
+</div>
+
+<!-- ─── SLIDE 5: Our Solution ─── -->
+<div class="slide slide-solution" data-slide="5">
+    <div class="section-label">Our Solution</div>
+    <div class="slide-title" style="font-size: 38px;">McAfee Intercepts <span class="green-text">Before</span> Install</div>
+    <div class="slide-subtitle">Real-time protection at the point of installation</div>
+    <div class="flow-diagram">
+        <div class="flow-step">
+            <div class="flow-step-icon">&#x1F4E6;</div>
+            <div class="flow-step-label">User Runs<br>npm/brew/pip</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step active-step" style="border-color: var(--mcafee-red); position: relative;">
+            <!-- Mini animated shield in flow -->
+            <div style="position: relative; width: 36px; height: 42px; margin: 0 auto 6px;">
+                <img class="mcafee-logo-ref" src="../image.png" alt="McAfee logo" style="width:36px; height:42px; filter: drop-shadow(0 0 8px rgba(200,16,46,0.5)); animation: miniShieldPulse 1.5s ease-in-out infinite;">
+            </div>
+            <div class="flow-step-label" style="color: var(--mcafee-red);">McAfee<br>INTERCEPTS</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+            <div class="flow-step-icon">&#x1F52C;</div>
+            <div class="flow-step-label">Deep<br>Analysis</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="border-color: var(--accent-green); background: rgba(0, 217, 126, 0.06);">
+            <div class="flow-step-icon">&#x2705;</div>
+            <div class="flow-step-label" style="color: var(--accent-green);">Allow<br>or Block</div>
+        </div>
+    </div>
+    <div style="margin-top: 36px;">
+        <div class="stat-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="stat-card">
+                <div class="stat-number" style="font-size: 36px;">4,600+</div>
+                <div class="stat-label">Files Scanned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="font-size: 36px;">15</div>
+                <div class="stat-label">Threat Categories</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="font-size: 36px;">61</div>
+                <div class="stat-label">Skills Analyzed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number green" style="font-size: 36px;">~13s</div>
+                <div class="stat-label">Total Scan Time</div>
+            </div>
+        </div>
+    </div>
+    <style>
+        @keyframes miniShieldPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(200,16,46,0.4)); }
+            50% { transform: scale(1.12); filter: drop-shadow(0 0 18px rgba(200,16,46,0.8)); }
+        }
+    </style>
+</div>
+
+<!-- ─── SLIDE 6: How It Works ─── -->
+<div class="slide" data-slide="6">
+    <div class="section-label">Architecture</div>
+    <div class="slide-title" style="font-size: 36px;">4-Phase Deep Analysis Pipeline</div>
+    <div style="margin-top: 32px;">
+        <div class="two-col">
+            <div class="col-content">
+                <div class="highlight-box" style="border-left-color: var(--accent-cyan);">
+                    <strong class="cyan-text">Phase 1:</strong> Dependency Scanning<br>
+                    <span style="font-size: 14px; color: var(--text-secondary);">npm/pip CVE detection, version analysis, unpinned dependency flagging</span>
+                </div>
+                <div class="highlight-box" style="border-left-color: var(--accent-purple);">
+                    <strong class="purple-text">Phase 2:</strong> Source Code Analysis<br>
+                    <span style="font-size: 14px; color: var(--text-secondary);">15-category pattern matching: base64 payloads, malicious IPs, credential harvesting, obfuscation</span>
+                </div>
+                <div class="highlight-box" style="border-left-color: var(--accent-yellow);">
+                    <strong class="yellow-text">Phase 3:</strong> Skill Repository Scanning<br>
+                    <span style="font-size: 14px; color: var(--text-secondary);">SKILL.md analysis, prompt injection detection, clone family identification</span>
+                </div>
+                <div class="highlight-box" style="border-left-color: var(--mcafee-red);">
+                    <strong class="red-text">Phase 4:</strong> CVE & Architecture Audit<br>
+                    <span style="font-size: 14px; color: var(--text-secondary);">Known CVEs, sandbox escapes, auth bypasses, config weaknesses</span>
+                </div>
+            </div>
+            <div class="col-content">
+                <div class="terminal" style="max-width: 500px;">
+                    <div class="terminal-header">
+                        <div class="terminal-dot red"></div>
+                        <div class="terminal-dot yellow"></div>
+                        <div class="terminal-dot green"></div>
+                        <div class="terminal-title">McAfee Pre-Install Auditor</div>
+                    </div>
+                    <div class="terminal-body">
+<span class="dim">$</span> <span class="cmd">npm install -g @openclaw/cli</span>
+<br><br>
+<span class="warn">── McAfee Pre-Install Auditor ──</span>
+<br><br>
+<span class="info">[1/4]</span> Scanning dependencies... <span class="cmd">&#x2713;</span>
+<br><span class="dim">  Found 12 dependency findings</span>
+<br><span class="info">[2/4]</span> Scanning source code... <span class="cmd">&#x2713;</span>
+<br><span class="dim">  4,664 files, 28 findings</span>
+<br><span class="info">[3/4]</span> Scanning skills... <span class="cmd">&#x2713;</span>
+<br><span class="dim">  61 skills, 8 findings</span>
+<br><span class="info">[4/4]</span> CVE & architecture... <span class="cmd">&#x2713;</span>
+<br><span class="dim">  5 CVE-related findings</span>
+<br><br>
+<span class="bold">Risk Score: <span class="err">100/100 (CRITICAL)</span></span>
+<br><span class="err red-bg">&#x26A0; DO NOT INSTALL</span>
+<br><br>
+<span class="err">&#x25A0;</span> 5 Critical &nbsp;<span class="warn">&#x25A0;</span> 20 High &nbsp;&#x25A0; 27 Medium
+<br><br>
+<span class="dim">Report: ~/mcafee/audit_2026.html</span>
+<br><span class="dim">Online: <a href="https://raw.githack.com/yvh1223/openclaw-preinstall-auditor/main/reports/openclaw_preinstall_audit_2026-02-08_full.html" target="_blank" style="color:#17a2b8;">View Full Report &#x2197;</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 7: ANIMATED SCANNING EXPERIENCE (THE HERO SLIDE)        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide slide-scanning" data-slide="7" style="padding: 40px 60px; background: radial-gradient(ellipse at 30% 50%, rgba(200,16,46,0.06) 0%, transparent 60%);">
+    <div class="section-label" style="margin-bottom: 8px;">Live Experience</div>
+    <div style="font-size: 28px; font-weight: 800; margin-bottom: 24px;">McAfee Pre-Install Auditor: <span class="red-text">SCANNING...</span></div>
+
+    <div class="scan-slide-layout">
+        <!-- Left: Animated shield -->
+        <div style="display: flex; justify-content: center;">
+            <div class="scan-shield-container">
+                <div class="scan-shield-bg-pulse"></div>
+                <div class="scan-ring"></div>
+                <div class="scan-ring"></div>
+                <div class="scan-ring"></div>
+                <div class="scan-line-v"></div>
+                <div class="shield-particles">
+                    <div class="particle"></div><div class="particle"></div>
+                    <div class="particle"></div><div class="particle"></div>
+                    <div class="particle"></div><div class="particle"></div>
+                    <div class="particle"></div><div class="particle"></div>
+                </div>
+                <img class="scan-shield-svg mcafee-logo-ref" src="../image.png" alt="McAfee logo" style="width:160px; height:192px;">
+                <div class="scan-status-text">SCANNING<span class="scan-dots"></span></div>
+            </div>
+        </div>
+
+        <!-- Right: Animated terminal output -->
+        <div class="scan-terminal flash-red">
+            <div class="terminal-header">
+                <div class="terminal-dot red"></div>
+                <div class="terminal-dot yellow"></div>
+                <div class="terminal-dot green"></div>
+                <div class="terminal-title">Terminal &mdash; McAfee Pre-Install Auditor</div>
+            </div>
+            <div class="scan-terminal-body">
+                <div class="type-line"><span style="color:#555">$</span> <span style="color:#27c93f">npm install -g @openclaw/cli</span></div>
+                <div class="type-line"><span style="color:#555">npm info resolving @openclaw/cli@latest</span></div>
+                <div class="type-line">&nbsp;</div>
+                <div class="type-line"><span style="color:#ffbd2e; font-weight:bold">&#x2501;&#x2501;&#x2501; McAfee Pre-Install Auditor &#x2501;&#x2501;&#x2501;</span></div>
+                <div class="type-line">&nbsp;</div>
+                <div class="type-line ascii-shield-block"><span style="color:#8B1A2B">  M   M  cccc   AAAAA  ffff  eeee  eeee</span></div>
+                <div class="type-line ascii-shield-block"><span style="color:#8B1A2B">  MM MM c      A   A  f     e     e</span></div>
+                <div class="type-line ascii-shield-block"><span style="color:#8B1A2B">  M M M c      AAAAA  fff   eee   eee</span></div>
+                <div class="type-line ascii-shield-block"><span style="color:#8B1A2B">  M   M c      A   A  f     e     e</span></div>
+                <div class="type-line ascii-shield-block"><span style="color:#8B1A2B">  M   M  cccc  A   A  f     eeee  eeee</span></div>
+                <div class="type-line">&nbsp;</div>
+                <div class="type-line"><span style="color:#C8102E; font-weight:bold">  McAfee</span> <span style="color:#fff; font-weight:bold">Pre-Install Auditor v1.0</span></div>
+                <div class="type-line">&nbsp;</div>
+                <div class="type-line"><span style="color:#17a2b8">&#x26A1; [1/4]</span> <span style="color:#ffbd2e">Scanning dependencies...</span> <span style="color:#27c93f; font-weight:bold">&#x2713; 12 findings</span></div>
+                <div class="type-line"><span style="color:#17a2b8">&#x26A1; [2/4]</span> <span style="color:#ffbd2e">Source code analysis...</span>  <span style="color:#27c93f; font-weight:bold">&#x2713; 28 findings</span></div>
+                <div class="type-line"><span style="color:#17a2b8">&#x26A1; [3/4]</span> <span style="color:#ffbd2e">Skill scanning...</span>       <span style="color:#27c93f; font-weight:bold">&#x2713; 8 findings</span></div>
+                <div class="type-line"><span style="color:#17a2b8">&#x26A1; [4/4]</span> <span style="color:#ffbd2e">CVE & architecture...</span>   <span style="color:#27c93f; font-weight:bold">&#x2713; 5 findings</span></div>
+                <div class="type-line">&nbsp;</div>
+                <div class="type-line"><span style="color:#ff5f56; font-weight:bold">&#x2554;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2557;</span></div>
+                <div class="type-line"><span style="color:#ff5f56; font-weight:bold">&#x2551;</span><span style="background:rgba(200,16,46,0.3);color:#fff;font-weight:bold;padding:0 4px">  &#x26A0;  SECURITY WARNING  &#x26A0;              </span><span style="color:#ff5f56; font-weight:bold">&#x2551;</span></div>
+                <div class="type-line"><span style="color:#ff5f56; font-weight:bold">&#x2560;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2563;</span></div>
+                <div class="type-line"><span style="color:#ff5f56; font-weight:bold">&#x2551;</span>  Risk Score: <span style="color:#ff5f56; font-weight:bold">87/100 (CRITICAL)</span>       <span style="color:#ff5f56; font-weight:bold">&#x2551;</span></div>
+                <div class="type-line"><span style="color:#ff5f56; font-weight:bold">&#x2551;</span>                                           <span style="color:#ff5f56; font-weight:bold">&#x2551;</span></div>
+                <div class="type-line"><span style="color:#ff5f56; font-weight:bold">&#x2551;</span>  <span style="color:#ff5f56">CRITICAL:</span> CVE-2026-25253 (token exfil) <span style="color:#ff5f56; font-weight:bold">&#x2551;</span></div>
+                <div class="type-line"><span style="color:#ff5f56; font-weight:bold">&#x2551;</span>  <span style="color:#ff5f56">CRITICAL:</span> Postinstall runs remote code <span style="color:#ff5f56; font-weight:bold">&#x2551;</span></div>
+                <div class="type-line"><span style="color:#ff5f56; font-weight:bold">&#x2551;</span>  <span style="color:#ff5f56">CRITICAL:</span> Accesses crypto wallets     <span style="color:#ff5f56; font-weight:bold">&#x2551;</span></div>
+                <div class="type-line"><span style="color:#ff5f56; font-weight:bold">&#x2551;</span>                                           <span style="color:#ff5f56; font-weight:bold">&#x2551;</span></div>
+                <div class="type-line"><span style="color:#ff5f56; font-weight:bold">&#x2551;</span>  <span style="color:#ff5f56; font-weight:bold">RECOMMENDATION: DO NOT INSTALL</span>      <span style="color:#ff5f56; font-weight:bold">&#x2551;</span></div>
+                <div class="type-line"><span style="color:#ff5f56; font-weight:bold">&#x255A;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x255D;</span></div>
+                <div class="type-line">&nbsp;</div>
+                <div class="type-line"><span style="color:#17a2b8">[V]</span> View report  <span style="color:#17a2b8">[C]</span> Cancel  <span style="color:#17a2b8">[I]</span> Install anyway <span class="blink-cursor"></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── SLIDE 8: Competitive Comparison ─── -->
+<div class="slide" data-slide="8">
+    <div class="section-label">Competitive Advantage</div>
+    <div class="slide-title" style="font-size: 36px;">McAfee vs. Competitors</div>
+    <div style="margin-top: 28px;">
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Capability</th>
+                    <th>Norton</th>
+                    <th>VirusTotal</th>
+                    <th>McAfee (Ours)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Pre-install interception</td><td class="cross">&#x2717;</td><td class="cross">&#x2717;</td><td class="check">&#x2713; Real-time</td></tr>
+                <tr><td>Deep source code analysis</td><td class="cross">&#x2717;</td><td class="cross">&#x2717;</td><td class="check">&#x2713; 15 categories</td></tr>
+                <tr><td>Dependency CVE scanning</td><td class="cross">&#x2717;</td><td class="partial">Partial</td><td class="check">&#x2713; npm + pip</td></tr>
+                <tr><td>AI skill/plugin analysis</td><td class="cross">&#x2717;</td><td class="cross">&#x2717;</td><td class="check">&#x2713; 61+ skills</td></tr>
+                <tr><td>Clone family detection</td><td class="cross">&#x2717;</td><td class="cross">&#x2717;</td><td class="check">&#x2713; Pattern matching</td></tr>
+                <tr><td>Prompt injection detection</td><td class="cross">&#x2717;</td><td class="cross">&#x2717;</td><td class="check">&#x2713; OWASP LLM01</td></tr>
+                <tr><td>Threat intelligence (IOCs)</td><td class="partial">Basic</td><td class="check">&#x2713;</td><td class="check">&#x2713; Campaign tracking</td></tr>
+                <tr><td>Risk scoring</td><td class="partial">Basic</td><td class="partial">Basic</td><td class="check">&#x2713; Weighted 0-100</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="margin-top: 28px; display: flex; gap: 24px; align-items: center; max-width: 800px;">
+        <div style="flex: 1;">
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">Norton detection rate</div>
+            <div class="risk-bar-container">
+                <div class="risk-bar-fill" style="width: 45%; background: var(--accent-yellow);"></div>
+            </div>
+            <div style="font-size: 12px; color: var(--accent-yellow); margin-top: 4px;">45%</div>
+        </div>
+        <div style="flex: 1;">
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">VirusTotal detection rate</div>
+            <div class="risk-bar-container">
+                <div class="risk-bar-fill" style="width: 68%; background: var(--accent-orange);"></div>
+            </div>
+            <div style="font-size: 12px; color: var(--accent-orange); margin-top: 4px;">68%</div>
+        </div>
+        <div style="flex: 1;">
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">McAfee detection rate</div>
+            <div class="risk-bar-container">
+                <div class="risk-bar-fill" style="width: 95%; background: var(--accent-green);"></div>
+            </div>
+            <div style="font-size: 12px; color: var(--accent-green); margin-top: 4px;">95%</div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── SLIDE 9: What We Built ─── -->
+<div class="slide" data-slide="9">
+    <div class="section-label">Deliverables</div>
+    <div class="slide-title" style="font-size: 36px;">What We Built</div>
+    <div style="margin-top: 28px;">
+        <div class="two-col" style="max-width: 1000px;">
+            <div class="col-content">
+                <h3 class="red-text">Scanning Engine</h3>
+                <ul class="bullet-list">
+                    <li class="green">4-phase deep analysis pipeline</li>
+                    <li class="green">15-category source code scanner</li>
+                    <li class="green">Dependency CVE database (npm + pip)</li>
+                    <li class="green">SKILL.md prompt injection detection</li>
+                    <li class="green">Known CVE + architecture weakness checks</li>
+                    <li class="green">Weighted 0-100 risk scoring engine</li>
+                </ul>
+            </div>
+            <div class="col-content">
+                <h3 class="red-text">User Experience</h3>
+                <ul class="bullet-list">
+                    <li class="green">CLI intercept for npm/brew/pip</li>
+                    <li class="green">Real-time terminal warning UI</li>
+                    <li class="green">Professional HTML reports with charts</li>
+                    <li class="green">JSON + text report export</li>
+                    <li class="green">Color-coded severity findings</li>
+                    <li class="green">Actionable remediation guidance</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="highlight-box" style="margin-top: 32px; max-width: 800px; text-align: center;">
+        <strong>Result:</strong> Scans the entire OpenClaw codebase (4,600+ files, 61 skills) in ~13 seconds<br>
+        Detects <span class="red-text" style="font-weight: 700;">53+ findings</span> including 5 critical CVEs
+    </div>
+    <div style="margin-top: 20px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <a href="https://github.com/yvh1223/openclaw-preinstall-auditor" target="_blank" style="color: var(--accent-cyan); font-size: 14px; text-decoration: none; border: 1px solid rgba(23,162,184,0.3); padding: 8px 20px; border-radius: 8px; background: rgba(23,162,184,0.06); transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            Source Code
+        </a>
+        <a href="https://raw.githack.com/yvh1223/openclaw-preinstall-auditor/main/reports/openclaw_preinstall_audit_2026-02-08_full.html" target="_blank" style="color: var(--mcafee-red); font-size: 14px; text-decoration: none; border: 1px solid rgba(200,16,46,0.3); padding: 8px 20px; border-radius: 8px; background: rgba(200,16,46,0.06); transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 0A1.5 1.5 0 002 1.5v13A1.5 1.5 0 003.5 16h9a1.5 1.5 0 001.5-1.5V4.5L10 0H3.5zM10 4V0l4 4h-4zM5 7h6v1H5V7zm0 2h6v1H5V9zm0 2h4v1H5v-1z"/></svg>
+            Full Audit Report (Live)
+        </a>
+    </div>
+</div>
+
+<!-- ─── SLIDE 10: Strategic Value ─── -->
+<div class="slide" data-slide="10">
+    <div class="section-label">Strategy</div>
+    <div class="slide-title" style="font-size: 36px;">Strategic Market Position</div>
+    <div style="margin-top: 28px;">
+        <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr); max-width: 900px;">
+            <div class="stat-card">
+                <div class="stat-number green" style="font-size: 42px;">First</div>
+                <div class="stat-label">To Market with<br>Pre-Install AI Scanning</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="font-size: 42px;">400M+</div>
+                <div class="stat-label">Existing McAfee<br>Users to Protect</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="font-size: 42px;">95%</div>
+                <div class="stat-label">Detection Rate<br>vs 68% VirusTotal</div>
+            </div>
+        </div>
+    </div>
+    <div style="margin-top: 36px; max-width: 800px;">
+        <ul class="bullet-list" style="font-size: 20px;">
+            <li><strong style="color: var(--text-primary);">Smart Scan Integration</strong> &mdash; Add AI agent scanning to existing desktop client for 400M+ users</li>
+            <li><strong style="color: var(--text-primary);">Enterprise Upsell (USXS)</strong> &mdash; Premium AI security module for enterprise customers</li>
+            <li><strong style="color: var(--text-primary);">Browser Extension</strong> &mdash; Real-time ClawHub scanning while users browse the marketplace</li>
+            <li><strong style="color: var(--text-primary);">API Platform</strong> &mdash; Cloud API for continuous monitoring and partner integrations</li>
+        </ul>
+    </div>
+</div>
+
+<!-- ─── SLIDE 11: Next Steps ─── -->
+<div class="slide" data-slide="11">
+    <div class="section-label">Roadmap</div>
+    <div class="slide-title" style="font-size: 36px;">Next Steps</div>
+    <div style="margin-top: 32px; max-width: 800px;">
+        <div class="highlight-box" style="border-left-color: var(--accent-green); margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong style="color: var(--accent-green);">Week 1-2:</strong> Finalize Engine + Cloud API
+                    <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">YARA rules, behavioral analysis, cloud deployment</div>
+                </div>
+                <div style="color: var(--accent-green); font-weight: 700;">IN PROGRESS</div>
+            </div>
+        </div>
+        <div class="highlight-box" style="border-left-color: var(--accent-cyan); margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong class="cyan-text">Week 3-4:</strong> Smart Scan Desktop Integration
+                    <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">Hook into existing McAfee client, real-time npm/brew/pip monitoring</div>
+                </div>
+                <div style="color: var(--accent-cyan); font-weight: 700;">PLANNED</div>
+            </div>
+        </div>
+        <div class="highlight-box" style="border-left-color: var(--accent-purple); margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong class="purple-text">Week 5-6:</strong> Browser Extension + ClawHub Integration
+                    <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">Real-time scanning on clawhub.ai marketplace pages</div>
+                </div>
+                <div style="color: var(--accent-purple); font-weight: 700;">PLANNED</div>
+            </div>
+        </div>
+        <div class="highlight-box" style="border-left-color: var(--accent-yellow);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong class="yellow-text">Week 7-8:</strong> Enterprise USXS Module + Beta Launch
+                    <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">Enterprise dashboard, API access, partner onboarding</div>
+                </div>
+                <div style="color: var(--accent-yellow); font-weight: 700;">PLANNED</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── SLIDE 12: Call to Action with animated green shield ─── -->
+<div class="slide" data-slide="12" style="background: radial-gradient(ellipse at 50% 50%, rgba(200, 16, 46, 0.1) 0%, transparent 70%);">
+    <div class="cta-shield">
+        <div class="shield-glow"></div>
+        <div class="shield-ring"></div>
+        <img class="mcafee-logo-ref" src="../image.png" alt="McAfee logo" style="width:100px; height:120px; filter: drop-shadow(0 0 20px rgba(0,217,126,0.4));">
+    </div>
+    <div class="slide-title" style="font-size: 42px; text-align: center;">
+        Ready to Ship<br><span class="red-text">AI Agent Protection</span>
+    </div>
+    <div class="big-quote" style="margin-top: 32px; font-size: 24px;">
+        The first security product that protects users before they install AI agent frameworks. No one else does this.
+    </div>
+    <div style="margin-top: 40px;">
+        <div class="cta-box">
+            <h2>2-Week Sprint to Production MVP</h2>
+            <p>Immediate value-add for 400M+ existing Smart Scan users</p>
+            <div style="font-size: 14px; opacity: 0.8;">
+                Engine &#x2713; &nbsp;|&nbsp; Reports &#x2713; &nbsp;|&nbsp; CLI Intercept &#x2713; &nbsp;|&nbsp; Threat Intel &#x2713;
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: center;">
+                <a href="https://github.com/yvh1223/openclaw-preinstall-auditor" target="_blank" style="color: #fff; font-size: 13px; text-decoration: none; border: 1px solid rgba(255,255,255,0.3); padding: 6px 18px; border-radius: 6px; background: rgba(255,255,255,0.1); transition: all 0.2s;">&#x1F517; GitHub Repo</a>
+                <a href="https://raw.githack.com/yvh1223/openclaw-preinstall-auditor/main/reports/openclaw_preinstall_audit_2026-02-08_full.html" target="_blank" style="color: #fff; font-size: 13px; text-decoration: none; border: 1px solid rgba(255,255,255,0.3); padding: 6px 18px; border-radius: 6px; background: rgba(255,255,255,0.1); transition: all 0.2s;">&#x1F4CA; Live Report</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /slides-container -->
+
+<!-- Navigation Bar -->
+<div class="nav-bar">
+    <div class="slide-counter">
+        <span id="currentSlide">1</span> / <span id="totalSlides">12</span>
+    </div>
+    <div class="key-hint">
+        <kbd>&larr;</kbd> <kbd>&rarr;</kbd> navigate &nbsp;&nbsp; <kbd>F</kbd> fullscreen &nbsp;&nbsp; <kbd>R</kbd> replay animations
+    </div>
+    <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn" onclick="prevSlide()">&larr; Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="nextSlide()">Next &rarr;</button>
+    </div>
+</div>
+
+<script>
+    let currentSlide = 1;
+    const totalSlides = document.querySelectorAll('.slide').length;
+
+    document.getElementById('totalSlides').textContent = totalSlides;
+
+    function resetSlideAnimations(slideEl) {
+        // Reset type-line animations by cloning
+        const typeLines = slideEl.querySelectorAll('.type-line');
+        typeLines.forEach(line => {
+            const clone = line.cloneNode(true);
+            line.parentNode.replaceChild(clone, line);
+        });
+        // Reset flash
+        const flash = slideEl.querySelector('.flash-red');
+        if (flash) {
+            flash.classList.remove('flash-red');
+            void flash.offsetWidth; // force reflow
+            flash.classList.add('flash-red');
+        }
+    }
+
+    function showSlide(n) {
+        if (n < 1 || n > totalSlides) return;
+        currentSlide = n;
+
+        document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+        const target = document.querySelector(`[data-slide="${n}"]`);
+        target.classList.add('active');
+
+        // Reset animations on scanning slide whenever it becomes active
+        if (target.classList.contains('slide-scanning')) {
+            resetSlideAnimations(target);
+        }
+
+        document.getElementById('currentSlide').textContent = n;
+        document.getElementById('progressFill').style.width = ((n / totalSlides) * 100) + '%';
+
+        document.getElementById('prevBtn').style.opacity = n === 1 ? 0.3 : 1;
+        document.getElementById('nextBtn').style.opacity = n === totalSlides ? 0.3 : 1;
+    }
+
+    function nextSlide() { showSlide(currentSlide + 1); }
+    function prevSlide() { showSlide(currentSlide - 1); }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); nextSlide(); }
+        if (e.key === 'ArrowLeft' || e.key === 'Backspace') { e.preventDefault(); prevSlide(); }
+        if (e.key === 'Home') { e.preventDefault(); showSlide(1); }
+        if (e.key === 'End') { e.preventDefault(); showSlide(totalSlides); }
+        if (e.key === 'r' || e.key === 'R') {
+            // Replay current slide animations
+            const active = document.querySelector('.slide.active');
+            if (active) {
+                active.classList.remove('active');
+                void active.offsetWidth;
+                active.classList.add('active');
+                if (active.classList.contains('slide-scanning')) {
+                    resetSlideAnimations(active);
+                }
+            }
+        }
+        if (e.key === 'f' || e.key === 'F') {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+    });
+
+    // Touch support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', (e) => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+            diff > 0 ? nextSlide() : prevSlide();
+        }
+    });
+
+    showSlide(1);
+</script>
+
+</body>
+</html>
