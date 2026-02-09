@@ -69,12 +69,38 @@ Current examples:
 - Full report: [Rendered HTML](https://raw.githack.com/yvh1223/openclaw-preinstall-auditor/main/reports/openclaw_preinstall_audit_2026-02-08_full.html)
 - Concise report: [Rendered HTML](https://raw.githack.com/yvh1223/openclaw-preinstall-auditor/main/reports/openclaw_preinstall_audit_2026-02-08_concise.html)
 
+## Terminal UI Demo
+
+Interactive terminal mock UI demonstrations showing how McAfee pre-install protection would intercept package installations in real-time:
+
+```bash
+# Clean version (recommended for Windows) - Dramatic, production-ready demo
+python scripts/terminal_mock_ui_clean.py --scenario npm     # ~12s - npm install intercepted (CRITICAL)
+python scripts/terminal_mock_ui_clean.py --scenario brew    # ~11s - brew install blocked (CRITICAL)
+python scripts/terminal_mock_ui_clean.py --scenario pip     # ~9s  - pip install approved (LOW RISK)
+python scripts/terminal_mock_ui_clean.py --scenario skill   # ~8s  - malicious skill blocked (CRITICAL)
+
+# Animated version (works better on Unix/Mac terminals)
+python scripts/terminal_mock_ui.py --scenario npm
+```
+
+### Features of Clean Version
+- **Realistic timing**: Each scanning phase includes dramatic delays (1-2.5 seconds per step) simulating real analysis
+- **Step-by-step visualization**: Shows scanning progress with status indicators (scanning → OK/! detected)
+- **No animation artifacts**: Clean output without repeated progress bar frames
+- **Professional presentation**: Ideal for executive demos, security training, and stakeholder presentations
+- **Windows compatible**: Pure ASCII characters, works perfectly in PowerShell and CMD
+
+Perfect for demonstrating the value proposition of pre-install security scanning to non-technical audiences.
+
 ## Project Structure
 
 ```
 openclaw-preinstall-auditor/
 |-- scripts/
-|   `-- scan_and_report.py             # Main entry point (4-phase scanner)
+|   |-- scan_and_report.py             # Main entry point (4-phase scanner)
+|   |-- terminal_mock_ui.py            # Interactive CLI demo with animations
+|   `-- terminal_mock_ui_clean.py      # Clean CLI demo (no animations)
 |-- src/
 |   |-- scanners/
 |   |   |-- dependency_scanner.py      # npm/pip CVE scanning
